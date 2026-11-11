@@ -2,190 +2,439 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Building2, MapPin, Phone, Mail, Clock, Send, CheckCircle2, MessageSquare, Globe } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Info,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Printer,
+  Send,
+  ShieldCheck,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import { siteInfo } from "@/data/site";
+
+const contactTopics = [
+  "สอบถามการสมัครสอบและการชำระเงิน",
+  "สอบถามสนามสอบและที่นั่งสอบ",
+  "การใช้งานระบบ E-Exam",
+  "การขอรับรองผลคะแนนหรือหนังสือรับรอง",
+  "ปัญหาการเข้าสู่ระบบหรือข้อมูลไม่ถูกต้อง",
+  "เอกสารและแบบฟอร์มคำขอ",
+  "เรื่องอื่น ๆ",
+];
+
+const channels = [
+  {
+    title: "โทรศัพท์",
+    value: siteInfo.phone,
+    href: `tel:${siteInfo.phoneHref}`,
+    icon: Phone,
+    description: "สอบถามข้อมูลและติดตามเรื่องในวันและเวลาราชการ",
+  },
+  {
+    title: "อีเมล",
+    value: siteInfo.email,
+    href: `mailto:${siteInfo.email}`,
+    icon: Mail,
+    description: "ส่งเอกสารหรือคำถามที่ต้องการคำตอบเป็นลายลักษณ์อักษร",
+  },
+  {
+    title: "โทรสาร",
+    value: siteInfo.fax,
+    href: undefined,
+    icon: Printer,
+    description: "ช่องทางสำหรับหน่วยงานที่ต้องการส่งเอกสารทางราชการ",
+  },
+];
 
 export default function ContactPage() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    topic: contactTopics[0],
+    subject: "",
+    message: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [reference, setReference] = useState("");
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  function updateField(key: keyof typeof form, value: string) {
+    setForm((current) => ({ ...current, [key]: value }));
+    if (errors[key]) {
+      setErrors((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+    }
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors: Record<string, string> = {};
+
+    if (!form.name.trim()) nextErrors.name = "กรุณากรอกชื่อ-นามสกุล";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      nextErrors.email = "กรุณากรอกอีเมลให้ถูกต้อง";
+    }
+    if (!form.subject.trim()) nextErrors.subject = "กรุณากรอกหัวข้อ";
+    if (form.message.trim().length < 10) {
+      nextErrors.message = "กรุณากรอกรายละเอียดอย่างน้อย 10 ตัวอักษร";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setReference(
+      `CNT-2570-${Math.floor(100000 + Math.random() * 900000)}`,
+    );
     setSent(true);
-  };
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">ติดต่อเรา</span>
-        </nav>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-          ติดต่อศูนย์สอบความรู้ฯ สภาเภสัชกรรม
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-          สอบถามข้อมูลการสอบ สมัครสอบ ขอรับเอกสาร หรือติดต่อเจ้าหน้าที่ศูนย์สอบฯ ตามวันและเวลาทำการ
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        title="ติดต่อศูนย์สอบฯ"
+        description="สอบถามข้อมูลการสอบ การสมัครสอบ เอกสาร และการให้บริการของศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม สภาเภสัชกรรม"
+        breadcrumbs={[{ label: "ติดต่อศูนย์สอบฯ" }]}
+        eyebrow="ช่วยเหลือ"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">{siteInfo.hours}</span>
+            <span>ปรับปรุงล่าสุด {siteInfo.updated}</span>
+          </div>
+        }
+        actions={
+          <a
+            href={siteInfo.mapUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-secondary"
+          >
+            <MapPin className="h-4 w-4" />
+            เปิดแผนที่สำนักงาน
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        }
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Contact Info & Channels */}
-        <div className="space-y-6">
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
-              <Building2 className="w-4 h-4 text-emerald-800" />
-              ที่ทำการสภาเภสัชกรรม (ศูนย์สอบความรู้ฯ)
+      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1fr_1.05fr] lg:py-10">
+        <div className="space-y-4">
+          <section className="card p-5 sm:p-6">
+            <h2 className="flex items-center gap-2 border-b border-gray-200 pb-3 text-base font-bold text-gray-900">
+              <MapPin className="h-5 w-5 text-emerald-700" />
+              ที่ทำการศูนย์สอบฯ
             </h2>
-
-            <div className="space-y-3.5 text-xs text-gray-600 font-light">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold text-gray-900">สถานที่ตั้ง</div>
-                  <div className="leading-relaxed mt-0.5">
-                    อาคาร 6 ชั้น 7 ซอยสาธารณสุข 8 กระทรวงสาธารณสุข<br />
-                    ถนนติวานนท์ ตำบลตลาดขวัญ อำเภอเมือง จังหวัดนนทบุรี 11000
-                  </div>
-                </div>
+            <address className="mt-4 not-italic">
+              <p className="text-sm leading-7 text-gray-700">
+                {siteInfo.address}
+              </p>
+              <div className="mt-3 grid gap-2 text-sm text-gray-700">
+                <p className="flex items-start gap-2">
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                  <span>
+                    โทรศัพท์:{" "}
+                    <a
+                      href={`tel:${siteInfo.phoneHref}`}
+                      className="font-semibold text-emerald-800 hover:underline"
+                    >
+                      {siteInfo.phone}
+                    </a>
+                  </span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <Printer className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                  <span>โทรสาร: {siteInfo.fax}</span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                  <span>
+                    อีเมล:{" "}
+                    <a
+                      href={`mailto:${siteInfo.email}`}
+                      className="break-all font-semibold text-emerald-800 hover:underline"
+                    >
+                      {siteInfo.email}
+                    </a>
+                  </span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <Clock className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                  <span>{siteInfo.hours}</span>
+                </p>
               </div>
+            </address>
+            <a
+              href={siteInfo.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-800 hover:underline"
+            >
+              เปิดตำแหน่งสำนักงานใน Google Maps
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </section>
 
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-emerald-800 shrink-0" />
-                <div>
-                  <div className="font-semibold text-gray-900">หมายเลขโทรศัพท์</div>
-                  <div className="font-mono text-emerald-900 font-medium">0-2591-9992 ถึง 5 (คู่สายอัตโนมัติ)</div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {channels.map((channel) => {
+              const Icon = channel.icon;
+              return (
+                <div key={channel.title} className="card p-4">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-50 text-emerald-700">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <h3 className="mt-2.5 text-sm font-bold text-gray-900">
+                    {channel.title}
+                  </h3>
+                  {channel.href ? (
+                    <a
+                      href={channel.href}
+                      className="mt-0.5 block break-all text-sm font-medium text-emerald-800 hover:underline"
+                    >
+                      {channel.value}
+                    </a>
+                  ) : (
+                    <p className="mt-0.5 text-sm font-medium text-gray-800">
+                      {channel.value}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs leading-5 text-gray-500">
+                    {channel.description}
+                  </p>
                 </div>
-              </div>
+              );
+            })}
+          </div>
 
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-emerald-800 shrink-0" />
-                <div>
-                  <div className="font-semibold text-gray-900">จดหมายอิเล็กทรอนิกส์ (Email)</div>
-                  <div className="font-mono text-emerald-900 font-medium">plecenter@pharmacycouncil.org</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Clock className="w-4 h-4 text-emerald-800 shrink-0" />
-                <div>
-                  <div className="font-semibold text-gray-900">เวลาทำการราชการ</div>
-                  <div>วันจันทร์ - วันศุกร์: 08:30 - 16:30 น. (เว้นวันหยุดราชการและวันนักขัตฤกษ์)</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Official communication channels */}
-            <div className="pt-3 border-t border-gray-100 space-y-2">
-              <div className="text-xs font-bold text-gray-900">ช่องทางการสื่อสารอิเล็กทรอนิกส์</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-emerald-800" />
-                  <div>
-                    <div className="font-semibold text-gray-900">LINE Official</div>
-                    <div className="text-[11px] text-gray-500 font-mono">@plecenter</div>
-                  </div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-emerald-800" />
-                  <div>
-                    <div className="font-semibold text-gray-900">เว็บไซต์ทางการ</div>
-                    <div className="text-[11px] text-gray-500">pharmacycouncil.org</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-emerald-950">
+              <MessageSquare className="h-4 w-4" />
+              ก่อนติดต่อเจ้าหน้าที่
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-emerald-900">
+              ท่านอาจพบคำตอบที่ต้องการแล้วในหน้าคำถามที่พบบ่อย
+              ซึ่งรวบรวมข้อมูลเกี่ยวกับการสมัครสอบ การชำระเงิน ที่นั่งสอบ
+              และผลการสอบไว้อย่างครบถ้วน
+            </p>
+            <Link
+              href="/faq"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-emerald-900 hover:underline"
+            >
+              ดูคำถามที่พบบ่อย
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
 
-        {/* Contact Form */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
-            <Mail className="w-4 h-4 text-emerald-800" />
-            ส่งข้อความสอบถามถึงเจ้าหน้าที่ศูนย์สอบฯ
+        <section className="card p-5 sm:p-6">
+          <h2 className="flex items-center gap-2 border-b border-gray-200 pb-3 text-base font-bold text-gray-900">
+            <Mail className="h-5 w-5 text-emerald-700" />
+            ส่งข้อความสอบถาม
           </h2>
 
-          {!sent ? (
-            <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">ชื่อ - นามสกุล ของท่าน *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="เช่น นายรักเรียน มุ่งมั่น"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">อีเมลติดต่อกลับ *</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="email@example.com"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-1">เบอร์โทรศัพท์ติดต่อ</label>
-                  <input
-                    type="tel"
-                    placeholder="08X-XXX-XXXX"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">หมวดหมู่เรื่องที่ติดต่อ *</label>
-                <select className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600">
-                  <option>สอบถามการสมัครสอบและการชำระเงิน</option>
-                  <option>สอบถามเรื่องสนามสอบและที่นั่งสอบ</option>
-                  <option>การใช้งานระบบสอบคอมพิวเตอร์ E-Exam</option>
-                  <option>การขอรับรองผลคะแนนหรือหนังสือรับรอง</option>
-                  <option>ปัญหาทางเทคนิคและการเข้าสู่ระบบ</option>
-                  <option>เรื่องอื่นๆ</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">รายละเอียดข้อความ *</label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="พิมพ์ข้อความที่ต้องการสอบถามหรือแจ้งปัญหา..."
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Send className="w-3.5 h-3.5" />
-                ส่งข้อความสอบถาม
-              </button>
-            </form>
-          ) : (
-            <div className="text-center py-8 space-y-2.5">
-              <div className="w-10 h-10 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-sm text-gray-900">ส่งข้อความเรียบร้อยแล้ว</h3>
-              <p className="text-xs text-gray-500 max-w-xs mx-auto font-light">
-                เจ้าหน้าที่ศูนย์สอบฯ จะดำเนินการตรวจสอบและติดต่อกลับตามข้อมูลที่ท่านระบุไว้
+          {sent ? (
+            <div className="py-6 text-center" role="status">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+                <CheckCircle2 className="h-7 w-7" />
+              </span>
+              <h3 className="mt-4 text-lg font-bold text-gray-900">
+                ส่งข้อความเรียบร้อยแล้ว
+              </h3>
+              <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-gray-600">
+                เจ้าหน้าที่จะตรวจสอบและติดต่อกลับตามข้อมูลที่ท่านระบุไว้
+                กรุณาเก็บหมายเลขอ้างอิงสำหรับการติดตาม
               </p>
-              <button
-                type="button"
-                onClick={() => setSent(false)}
-                className="text-xs font-semibold text-emerald-800 hover:underline pt-1"
-              >
-                ส่งข้อความฉบับอื่น
-              </button>
+              <div className="mx-auto mt-4 max-w-xs rounded-md border border-gray-200 bg-gray-50 p-4">
+                <div className="text-xs text-gray-500">หมายเลขอ้างอิง</div>
+                <div className="mt-1 font-mono text-xl font-bold text-emerald-900">
+                  {reference}
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSent(false);
+                    setReference("");
+                    setForm({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      topic: contactTopics[0],
+                      subject: "",
+                      message: "",
+                    });
+                  }}
+                  className="btn-secondary"
+                >
+                  ส่งข้อความฉบับอื่น
+                </button>
+                <Link href="/" className="btn-neutral">
+                  กลับสู่หน้าแรก
+                </Link>
+              </div>
             </div>
+          ) : (
+            <>
+              <div className="notice-warning mt-4">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <p className="text-sm leading-6">
+                  แบบฟอร์มนี้เป็นการสาธิตการทำงานของระบบ
+                  ยังไม่มีการส่งข้อมูลจริง กรุณาติดต่อผ่านโทรศัพท์หรืออีเมล
+                  หากต้องการความช่วยเหลือเร่งด่วน
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="contact-name" className="field-label">
+                      ชื่อ-นามสกุล <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      value={form.name}
+                      onChange={(event) =>
+                        updateField("name", event.target.value)
+                      }
+                      placeholder="เช่น นายตัวอย่าง ใจดี"
+                      aria-invalid={Boolean(errors.name)}
+                      className={`input ${errors.name ? "border-red-400" : ""}`}
+                    />
+                    {errors.name && (
+                      <p className="mt-1.5 text-sm font-medium text-red-700">
+                        {errors.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-email" className="field-label">
+                      อีเมลติดต่อกลับ <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      value={form.email}
+                      onChange={(event) =>
+                        updateField("email", event.target.value)
+                      }
+                      placeholder="name@example.com"
+                      aria-invalid={Boolean(errors.email)}
+                      className={`input ${errors.email ? "border-red-400" : ""}`}
+                    />
+                    {errors.email && (
+                      <p className="mt-1.5 text-sm font-medium text-red-700">
+                        {errors.email}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-phone" className="field-label">
+                      เบอร์โทรศัพท์
+                    </label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      value={form.phone}
+                      onChange={(event) =>
+                        updateField("phone", event.target.value)
+                      }
+                      placeholder="08X-XXX-XXXX"
+                      className="input"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="contact-topic" className="field-label">
+                      หมวดหมู่เรื่องที่ติดต่อ
+                    </label>
+                    <select
+                      id="contact-topic"
+                      value={form.topic}
+                      onChange={(event) =>
+                        updateField("topic", event.target.value)
+                      }
+                      className="select"
+                    >
+                      {contactTopics.map((topic) => (
+                        <option key={topic} value={topic}>
+                          {topic}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="contact-subject" className="field-label">
+                      หัวข้อ <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="contact-subject"
+                      type="text"
+                      value={form.subject}
+                      onChange={(event) =>
+                        updateField("subject", event.target.value)
+                      }
+                      placeholder="สรุปเรื่องที่ต้องการสอบถามโดยย่อ"
+                      aria-invalid={Boolean(errors.subject)}
+                      className={`input ${errors.subject ? "border-red-400" : ""}`}
+                    />
+                    {errors.subject && (
+                      <p className="mt-1.5 text-sm font-medium text-red-700">
+                        {errors.subject}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="contact-message" className="field-label">
+                      รายละเอียด <span className="text-red-600">*</span>
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      rows={5}
+                      value={form.message}
+                      onChange={(event) =>
+                        updateField("message", event.target.value)
+                      }
+                      placeholder="อธิบายรายละเอียดของเรื่องที่ต้องการสอบถาม เพื่อให้เจ้าหน้าที่ตรวจสอบและตอบกลับได้อย่างถูกต้อง"
+                      aria-invalid={Boolean(errors.message)}
+                      className={`textarea ${errors.message ? "border-red-400" : ""}`}
+                    />
+                    {errors.message && (
+                      <p className="mt-1.5 text-sm font-medium text-red-700">
+                        {errors.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-xs leading-5 text-gray-500">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                  ข้อมูลของท่านจะถูกใช้เพื่อการติดต่อกลับและตรวจสอบเรื่องที่สอบถามเท่านั้น
+                  ตามนโยบายความเป็นส่วนตัวของศูนย์สอบฯ
+                </div>
+
+                <button type="submit" className="btn-primary">
+                  <Send className="h-4 w-4" />
+                  ส่งข้อความสอบถาม
+                </button>
+              </form>
+            </>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

@@ -1,227 +1,479 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FileText,
-  Monitor,
-  Calendar,
-  ClipboardList,
-  Search,
-  BookOpen,
-  HelpCircle,
-  Phone,
-  ChevronDown,
-  Menu,
-  X,
-  ShieldCheck,
-  Building2,
+  ArrowRight,
   Bell,
+  BookOpen,
+  Building,
+  CalendarDays,
+  ChevronDown,
+  ClipboardList,
+  FolderOpen,
+  GraduationCap,
+  LogIn,
+  Mail,
+  Menu,
+  Monitor,
+  Phone,
+  Scale,
+  Search,
+  ShieldCheck,
+  Users,
+  X,
 } from "lucide-react";
 
-const navLinks = [
+type NavChild = {
+  href: string;
+  label: string;
+  description: string;
+  icon: typeof Search;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  children?: NavChild[];
+};
+
+const navItems: NavItem[] = [
   { href: "/", label: "หน้าแรก" },
+  {
+    href: "/about",
+    label: "เกี่ยวกับเรา",
+    children: [
+      {
+        href: "/about",
+        label: "เกี่ยวกับศูนย์สอบฯ",
+        description: "บทบาท หน้าที่ และขอบเขตการดำเนินงาน",
+        icon: Building,
+      },
+      {
+        href: "/committees",
+        label: "คณะอนุกรรมการและคณะทำงาน",
+        description: "โครงสร้างการกำกับดูแลและผู้รับผิดชอบ",
+        icon: Users,
+      },
+      {
+        href: "/examinees",
+        label: "ข้อมูลสำหรับผู้เข้าสอบ",
+        description: "คุณสมบัติ รหัสผู้สอบ และขั้นตอนที่เกี่ยวข้อง",
+        icon: GraduationCap,
+      },
+    ],
+  },
+  {
+    href: "/calendar",
+    label: "การสอบ",
+    children: [
+      {
+        href: "/calendar",
+        label: "ปฏิทินและกำหนดการสอบ",
+        description: "ตารางสอบและกำหนดการเตรียมความพร้อม",
+        icon: CalendarDays,
+      },
+      {
+        href: "/regulations",
+        label: "ระเบียบและเกณฑ์การสอบ",
+        description: "ข้อบังคับ ประกาศ และเกณฑ์การประเมิน",
+        icon: Scale,
+      },
+      {
+        href: "/guides",
+        label: "คู่มือการสอบ",
+        description: "คู่มือและแนวทางปฏิบัติสำหรับผู้เข้าสอบ",
+        icon: BookOpen,
+      },
+      {
+        href: "/sample-exams",
+        label: "ตัวอย่างข้อสอบ",
+        description: "ตัวอย่างข้อสอบและแนวทางการตอบ",
+        icon: ClipboardList,
+      },
+      {
+        href: "/e-exam",
+        label: "ระบบ E-Exam",
+        description: "ข้อมูลระบบสอบคอมพิวเตอร์และทดลองสอบ",
+        icon: Monitor,
+      },
+    ],
+  },
+  {
+    href: "/apply",
+    label: "บริการออนไลน์",
+    children: [
+      {
+        href: "/apply",
+        label: "สมัครสอบออนไลน์",
+        description: "ยื่นใบสมัครและชำระค่าธรรมเนียม",
+        icon: ClipboardList,
+      },
+      {
+        href: "/exam-registration",
+        label: "ลงทะเบียนเข้าสอบ",
+        description: "เข้าสู่ระบบด้วยเลขบัตรและรหัสผู้สอบ",
+        icon: LogIn,
+      },
+      {
+        href: "/scores",
+        label: "ตรวจสอบสถานะและผลสอบ",
+        description: "ค้นหาสถานะการสมัคร ที่นั่งสอบ และคะแนน",
+        icon: Search,
+      },
+      {
+        href: "/documents",
+        label: "เอกสารและแบบฟอร์ม",
+        description: "ดาวน์โหลดแบบฟอร์มและคู่มือที่เกี่ยวข้อง",
+        icon: FolderOpen,
+      },
+      {
+        href: "/requests",
+        label: "ยื่นคำร้องออนไลน์",
+        description: "ทักท้วงข้อสอบ ขอทราบคะแนน และขอคืนเงิน",
+        icon: ClipboardList,
+      },
+    ],
+  },
   { href: "/news", label: "ข่าวสาร/ประกาศ" },
-  { href: "/calendar", label: "ปฏิทินสอบ" },
-  { href: "/apply", label: "สมัครสอบออนไลน์" },
-  { href: "/scores", label: "ตรวจสอบสถานะ/คะแนน" },
-  { href: "/regulations", label: "ระเบียบและเกณฑ์สอบ" },
-  { href: "/sample-exams", label: "ตัวอย่างข้อสอบ" },
-  { href: "/documents", label: "ศูนย์เอกสาร" },
-  { href: "/e-exam", label: "ระบบ E-Exam" },
-  { href: "/contact", label: "ติดต่อสภาฯ" },
+  { href: "/contact", label: "ติดต่อเรา" },
 ];
 
-function NavLinksDesktop({ pathname }: { pathname: string }) {
+function isItemActive(pathname: string, item: NavItem) {
+  if (item.href === "/") return pathname === "/";
   return (
-    <nav className="hidden xl:flex items-center gap-1">
-      {navLinks.slice(0, 7).map((link) => {
-        const isActive = pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
-              isActive
-                ? "text-emerald-800 bg-emerald-50 font-semibold border-b-2 border-emerald-600 rounded-b-none"
-                : "text-gray-700 hover:text-emerald-800 hover:bg-emerald-50/50"
-            }`}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
-
-      {/* Services dropdown */}
-      <div className="relative group">
-        <button className="px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:text-emerald-800 hover:bg-emerald-50/50 flex items-center gap-1">
-          <span>บริการอื่น</span>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-500 group-hover:rotate-180 transition-transform" />
-        </button>
-        <div className="absolute right-0 top-full pt-1.5 hidden group-hover:block w-56 z-50">
-          <div className="bg-white rounded-xl shadow-lg border border-emerald-100 p-1.5 space-y-0.5">
-            <Link href="/documents" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <FileText className="w-3.5 h-3.5 text-emerald-700" />
-              <span>ศูนย์เอกสารและแบบฟอร์ม</span>
-            </Link>
-            <Link href="/e-exam" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <Monitor className="w-3.5 h-3.5 text-emerald-700" />
-              <span>ระบบสอบ E-Exam</span>
-            </Link>
-            <Link href="/requests" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <ClipboardList className="w-3.5 h-3.5 text-emerald-700" />
-              <span>ยื่นคำร้องและทักท้วง</span>
-            </Link>
-            <Link href="/guides" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
-              <span>คู่มือการสอบวิชาชีพ</span>
-            </Link>
-            <Link href="/faq" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <HelpCircle className="w-3.5 h-3.5 text-emerald-700" />
-              <span>คำถามที่พบบ่อย (FAQ)</span>
-            </Link>
-            <Link href="/contact" className="flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 rounded-lg hover:bg-emerald-50 hover:text-emerald-800">
-              <Building2 className="w-3.5 h-3.5 text-emerald-700" />
-              <span>ติดต่อสภาเภสัชกรรม</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </nav>
+    pathname === item.href ||
+    pathname.startsWith(`${item.href}/`) ||
+    Boolean(item.children?.some((child) => pathname.startsWith(child.href)))
   );
 }
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentPath, setCurrentPath] = useState("/");
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (pathname) {
-      setCurrentPath(pathname);
-    }
+    setOpenMenu(null);
+    setMobileOpen(false);
+    setMobileGroup(null);
   }, [pathname]);
 
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+        setMobileOpen(false);
+      }
+    }
+    function onPointerDown(event: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   return (
-    <header className="sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-emerald-100 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-      {/* Official Government Micro Top Bar */}
-      <div className="bg-emerald-800 text-white px-4 py-1.5 text-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 truncate">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-900 text-emerald-100 border border-emerald-700">
-              <Bell className="w-3 h-3 text-emerald-300" />
-              ประกาศทางการ
+    <header className="sticky top-0 z-50 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
+      {/* Official utility bar */}
+      <div className="bg-emerald-900 text-emerald-50">
+        <div className="container-page flex min-h-9 items-center justify-between gap-3 py-1.5 text-xs">
+          <div className="flex min-w-0 items-center gap-2">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            <span className="hidden shrink-0 font-medium text-amber-300 sm:inline">
+              เว็บไซต์ทางการ
             </span>
+            <span className="hidden text-emerald-300 sm:inline">|</span>
             <span className="truncate text-emerald-100">
-              การสอบความรู้และทักษะทางวิชาชีพเภสัชกรรม (PLE-CC1 & PLE-PC1) ประจำปี 2569
+              ศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม สภาเภสัชกรรม
             </span>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-emerald-200 shrink-0 text-[11px]">
-            <Link href="/faq" className="hover:text-white transition-colors">ถาม-ตอบ FAQ</Link>
-            <span className="text-emerald-600">|</span>
-            <Link href="/requests" className="hover:text-white transition-colors">ยื่นคำร้องออนไลน์</Link>
-            <span className="text-emerald-600">|</span>
-            <a href="tel:025919992" className="hover:text-white transition-colors flex items-center gap-1">
-              <Phone className="w-3 h-3" />
-              0-2591-9992-5
+          <div className="flex shrink-0 items-center gap-3 text-emerald-100">
+            <a
+              href="tel:025919992"
+              className="hidden items-center gap-1.5 hover:text-white md:flex"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              0-2591-9992 ถึง 5
             </a>
+            <span className="hidden text-emerald-600 md:inline">|</span>
+            <a
+              href="mailto:ph_exam@pharmacycouncil.org"
+              className="hidden items-center gap-1.5 hover:text-white lg:flex"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              ph_exam@pharmacycouncil.org
+            </a>
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 rounded px-1.5 py-0.5 font-medium hover:bg-emerald-800 hover:text-white"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              เข้าสู่ระบบ
+            </Link>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
-          {/* Official Emblem Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-xs border border-emerald-600 group-hover:bg-emerald-800 transition-colors">
-              <ShieldCheck className="w-5 h-5 text-emerald-100" />
-            </div>
-            <div className="leading-tight">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold tracking-tight text-gray-900 font-sans">
-                  ศูนย์สอบความรู้ฯ สภาเภสัชกรรม
-                </span>
-              </div>
-              <span className="block text-[11px] text-gray-500 font-normal">
-                Pharmacy Licensure Examination Center (PLE)
+      {/* Main navigation */}
+      <div className="border-b border-gray-200">
+        <div className="container-page flex h-[4.5rem] items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="flex min-w-0 shrink-0 items-center gap-2.5"
+            aria-label="กลับสู่หน้าแรก ศูนย์สอบความรู้ฯ สภาเภสัชกรรม"
+          >
+            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-emerald-700 bg-emerald-700 text-white">
+              <ShieldCheck className="h-6 w-6" strokeWidth={1.8} />
+              <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-amber-400" />
+            </span>
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate text-base font-bold text-gray-900 sm:text-[1.05rem]">
+                ศูนย์สอบความรู้ฯ สภาเภสัชกรรม
               </span>
-            </div>
+              <span className="mt-0.5 block truncate text-[0.68rem] font-medium uppercase tracking-wide text-gray-500">
+                Pharmacy Licensure Examination Center
+              </span>
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <NavLinksDesktop pathname={currentPath} />
+          <nav
+            ref={navRef}
+            className="hidden items-center gap-0.5 xl:flex"
+            aria-label="เมนูหลัก"
+          >
+            {navItems.map((item) => {
+              const active = isItemActive(pathname, item);
+              if (!item.children) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`rounded-md px-2.5 py-2 text-sm font-semibold transition-colors ${
+                      active
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
 
-          {/* User actions */}
-          <div className="hidden sm:flex items-center gap-2">
+              const isOpen = openMenu === item.label;
+              return (
+                <div
+                  key={item.href}
+                  className="relative"
+                  onMouseEnter={() => setOpenMenu(item.label)}
+                  onMouseLeave={() => setOpenMenu(null)}
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenMenu(isOpen ? null : item.label)
+                    }
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                    className={`flex items-center gap-1 rounded-md px-2.5 py-2 text-sm font-semibold transition-colors ${
+                      active || isOpen
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-800"
+                    }`}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition-transform ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="absolute left-1/2 top-full z-50 w-[22rem] -translate-x-1/2 pt-2">
+                      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
+                        {item.children.map((child) => {
+                          const Icon = child.icon;
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className="flex gap-3 px-4 py-2.5 transition-colors hover:bg-emerald-50"
+                            >
+                              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-emerald-700">
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span>
+                                <span className="block text-sm font-semibold text-gray-900">
+                                  {child.label}
+                                </span>
+                                <span className="mt-0.5 block text-xs leading-snug text-gray-500">
+                                  {child.description}
+                                </span>
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
             <Link
-              href="/auth/login"
-              className="px-3.5 py-2 text-xs font-medium text-emerald-900 rounded-lg hover:bg-emerald-50 transition-colors border border-emerald-200"
+              href="/search"
+              className="icon-button"
+              aria-label="ค้นหาเว็บไซต์"
+              title="ค้นหาเว็บไซต์"
             >
-              เข้าสู่ระบบ
+              <Search className="h-4 w-4" />
             </Link>
             <Link
               href="/apply"
-              className="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 shadow-xs transition-colors"
+              className="hidden items-center gap-1.5 rounded-md bg-emerald-700 px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 sm:flex"
             >
-              สมัครสอบออนไลน์
+              สมัครสอบ
+              <ArrowRight className="h-4 w-4" />
             </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              className="icon-button xl:hidden"
+              aria-label={mobileOpen ? "ปิดเมนู" : "เปิดเมนู"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-navigation"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden p-2 text-gray-700 rounded-lg hover:bg-emerald-50 border border-gray-200"
-            aria-label="เปิดเมนูนำทาง"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-gray-200 bg-white px-4 py-4 space-y-1 max-h-[85vh] overflow-y-auto">
-          {navLinks.map((link) => {
-            const isActive = currentPath === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2 text-xs rounded-lg font-medium transition-colors ${
-                  isActive
-                    ? "bg-emerald-50 text-emerald-800 font-semibold"
-                    : "text-gray-700 hover:bg-emerald-50/60"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-          <div className="pt-3 mt-3 border-t border-gray-200 grid grid-cols-2 gap-2">
-            <Link
-              href="/auth/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 text-center text-xs font-medium text-emerald-800 rounded-lg border border-emerald-200 bg-white"
-            >
-              เข้าสู่ระบบ
-            </Link>
+      {/* Mobile navigation */}
+      {mobileOpen && (
+        <div
+          id="mobile-navigation"
+          className="fixed inset-x-0 bottom-0 top-[6.75rem] z-40 overflow-y-auto border-t border-gray-200 bg-white xl:hidden"
+        >
+          <div className="container-page space-y-1 py-4">
             <Link
               href="/apply"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-2 text-center text-xs font-semibold text-white bg-emerald-700 rounded-lg hover:bg-emerald-800"
+              className="mb-3 flex items-center justify-between rounded-md bg-emerald-700 px-4 py-3 text-sm font-semibold text-white"
             >
               สมัครสอบออนไลน์
+              <ArrowRight className="h-4 w-4" />
             </Link>
+
+            {navItems.map((item) => {
+              const active = isItemActive(pathname, item);
+              if (!item.children) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center justify-between rounded-md px-4 py-3 text-sm font-semibold ${
+                      active
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "text-gray-800 hover:bg-gray-50"
+                    }`}
+                  >
+                    {item.label}
+                    <ChevronRightIcon />
+                  </Link>
+                );
+              }
+              const expanded = mobileGroup === item.label;
+              return (
+                <div key={item.href} className="border-b border-gray-100 pb-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMobileGroup(expanded ? null : item.label)
+                    }
+                    className={`flex w-full items-center justify-between rounded-md px-4 py-3 text-sm font-semibold ${
+                      active
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "text-gray-800 hover:bg-gray-50"
+                    }`}
+                    aria-expanded={expanded}
+                  >
+                    {item.label}
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        expanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {expanded && (
+                    <div className="space-y-0.5 pb-2 pl-2">
+                      {item.children.map((child) => {
+                        const Icon = child.icon;
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="flex items-center gap-3 rounded-md px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50"
+                          >
+                            <Icon className="h-4 w-4 text-emerald-700" />
+                            {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
+                <Bell className="h-4 w-4" />
+                ประกาศสำคัญ
+              </div>
+              <Link
+                href="/news/1"
+                className="mt-1 block text-sm leading-snug text-amber-900 hover:underline"
+              >
+                เปิดรับสมัครสอบครั้งที่ 1/2570 ถึงวันที่ 15 ธันวาคม 2569
+              </Link>
+            </div>
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className="h-4 w-4 text-gray-400"
+      aria-hidden="true"
+    >
+      <path d="m7.5 5 5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

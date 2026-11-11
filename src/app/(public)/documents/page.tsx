@@ -1,220 +1,256 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Download, Search, FileText, ArrowRight, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  Info,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import {
+  documentCategories,
+  documentItems,
+} from "@/data/documents";
 
-interface DocItem {
-  id: number;
-  category: string;
-  title: string;
-  code: string;
-  fileType: "PDF" | "DOCX";
-  fileSize: string;
-  downloads: string;
-  date: string;
+export const metadata: Metadata = {
+  title: "เอกสารและแบบฟอร์ม",
+  description:
+    "แบบฟอร์มคำขอ คู่มือการสอบ ระเบียบ และเอกสารประกอบการสมัครสอบของศูนย์สอบความรู้ฯ สภาเภสัชกรรม",
+};
+
+export const instant = false;
+
+type DocumentsSearchParams = {
+  category?: string;
+  q?: string;
+};
+
+function buildQuery(category: string, q: string) {
+  const params = new URLSearchParams();
+  if (category !== "ทั้งหมด") params.set("category", category);
+  if (q) params.set("q", q);
+  const query = params.toString();
+  return query ? `/documents?${query}` : "/documents";
 }
 
-const documentsData: DocItem[] = [
-  {
-    id: 1,
-    category: "แบบฟอร์มคำขอและคำร้อง",
-    title: "แบบฟอร์มยื่นคำร้องทักท้วงข้อสอบความรู้ทางวิชาชีพเภสัชกรรม (ภส.10)",
-    code: "FORM-PLE-10",
-    fileType: "PDF",
-    fileSize: "420 KB",
-    downloads: "4,210",
-    date: "ต.ค. 2568",
-  },
-  {
-    id: 2,
-    category: "แบบฟอร์มคำขอและคำร้อง",
-    title: "คำขอตรวจสอบและขอทราบผลคะแนนสอบรายวิชาย่อย (ภส.11)",
-    code: "FORM-PLE-11",
-    fileType: "PDF",
-    fileSize: "380 KB",
-    downloads: "5,840",
-    date: "ต.ค. 2568",
-  },
-  {
-    id: 3,
-    category: "แบบฟอร์มคำขอและคำร้อง",
-    title: "คำร้องขอรับเงินค่าธรรมเนียมการสอบคืน กรณีมีเหตุสุดวิสัย (ภส.12)",
-    code: "FORM-PLE-12",
-    fileType: "PDF",
-    fileSize: "350 KB",
-    downloads: "1,290",
-    date: "ก.ย. 2568",
-  },
-  {
-    id: 4,
-    category: "คู่มือการสอบ",
-    title: "คู่มือการใช้งานระบบสอบออนไลน์ด้วยคอมพิวเตอร์ E-Exam สำหรับผู้สอบ",
-    code: "MANUAL-EEXAM",
-    fileType: "PDF",
-    fileSize: "3.2 MB",
-    downloads: "18,400",
-    date: "พ.ย. 2568",
-  },
-  {
-    id: 5,
-    category: "คู่มือการสอบ",
-    title: "คู่มือเกณฑ์ความรู้และทักษะตามสมรรถนะร่วม (Core Competency Handbook)",
-    code: "MANUAL-CC",
-    fileType: "PDF",
-    fileSize: "5.4 MB",
-    downloads: "14,100",
-    date: "ส.ค. 2568",
-  },
-  {
-    id: 6,
-    category: "เอกสารการสมัคร",
-    title: "เอกสารแนะนำการยื่นสมัครสอบผ่านคณะเภสัชศาสตร์ และการสมัครรายบุคคล",
-    code: "GUIDE-REG",
-    fileType: "PDF",
-    fileSize: "1.2 MB",
-    downloads: "9,600",
-    date: "ต.ค. 2568",
-  },
-  {
-    id: 7,
-    category: "แบบฟอร์มคำขอและคำร้อง",
-    title: "ใบนำชำระเงินค่าปรับและค่าธรรมเนียมล่าช้า (Pay-in Slip)",
-    code: "FORM-PAYIN",
-    fileType: "PDF",
-    fileSize: "290 KB",
-    downloads: "2,150",
-    date: "ก.ค. 2568",
-  },
-  {
-    id: 8,
-    category: "เอกสารการสมัคร",
-    title: "แบบคำขอหนังสือรับรองการฝึกปฏิบัติงานวิชาชีพเภสัชกรรม (2,000 ชั่วโมง)",
-    code: "FORM-INTERN",
-    fileType: "DOCX",
-    fileSize: "180 KB",
-    downloads: "7,320",
-    date: "ส.ค. 2568",
-  },
-];
+export default async function DocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<DocumentsSearchParams>;
+}) {
+  const params = await searchParams;
+  const selectedCategory = documentCategories.includes(
+    (params.category ?? "ทั้งหมด") as (typeof documentCategories)[number],
+  )
+    ? (params.category ?? "ทั้งหมด")
+    : "ทั้งหมด";
+  const query = (params.q ?? "").trim().toLowerCase();
 
-export default function DocumentsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
-  const [search, setSearch] = useState("");
-
-  const categories = ["ทั้งหมด", "แบบฟอร์มคำขอและคำร้อง", "คู่มือการสอบ", "เอกสารการสมัคร"];
-
-  const filtered = documentsData.filter((doc) => {
-    const matchCat = selectedCategory === "ทั้งหมด" || doc.category === selectedCategory;
-    const matchSearch = doc.title.toLowerCase().includes(search.toLowerCase()) ||
-                        doc.code.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+  const filtered = documentItems.filter((doc) => {
+    const matchCategory =
+      selectedCategory === "ทั้งหมด" || doc.category === selectedCategory;
+    const matchQuery =
+      !query ||
+      [doc.title, doc.code, doc.description, doc.category]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    return matchCategory && matchQuery;
   });
 
+  const grouped = documentCategories
+    .filter((category) => category !== "ทั้งหมด")
+    .map((category) => ({
+      category,
+      items: filtered.filter((doc) => doc.category === category),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-      {/* Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">ศูนย์เอกสารและแบบฟอร์ม</span>
-        </nav>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-          ศูนย์ดาวน์โหลดเอกสารและแบบฟอร์มคำขอ
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-          ดาวน์โหลดแบบฟอร์มคำร้อง คู่มือการสอบ เอกสารประกอบการสมัครสอบ และหนังสือรับรอง
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        title="เอกสารและแบบฟอร์ม"
+        description="รวมแบบฟอร์มคำขอ คู่มือการสอบ ระเบียบการสอบ และเอกสารประกอบการสมัครสอบ โดยเปิดดูรายละเอียดและพิมพ์เอกสารได้จากหน้ารายการ"
+        breadcrumbs={[{ label: "เอกสารและแบบฟอร์ม" }]}
+        eyebrow="บริการออนไลน์"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">
+              เอกสารทั้งหมด {documentItems.length} รายการ
+            </span>
+            <span>ปรับปรุงล่าสุด 1 พฤศจิกายน 2569</span>
+          </div>
+        }
+        actions={
+          <Link href="/requests" className="btn-secondary">
+            <ShieldCheck className="h-4 w-4" />
+            ยื่นคำร้องออนไลน์
+          </Link>
+        }
+      />
 
-      {/* Online action banner */}
-      <div className="p-4 sm:p-5 rounded-xl bg-gray-50 border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-xs">
-          <div className="font-bold text-gray-900 text-sm">บริการยื่นคำร้องหรือทักท้วงข้อสอบออนไลน์</div>
-          <div className="text-gray-500 font-light">
-            ท่านสามารถกรอกและส่งคำร้องผ่านระบบออนไลน์ได้โดยตรง ไม่จำเป็นต้องพิมพ์เอกสารกระดาษ
+      <div className="container-page py-8 lg:py-10">
+        <div className="notice">
+          <Info className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold">การใช้งานเอกสาร</p>
+            <p className="mt-1 leading-6">
+              เอกสารในระบบนี้เป็นตัวอย่างเพื่ออำนวยความสะดวกในการค้นหาและตรวจสอบรายละเอียด
+              หากต้องการเอกสารฉบับทางการที่ประทับตรา กรุณาติดต่อศูนย์สอบฯ
+              หรือดาวน์โหลดจากประกาศฉบับทางการที่เกี่ยวข้อง
+            </p>
           </div>
         </div>
-        <Link
-          href="/requests"
-          className="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors shrink-0 flex items-center gap-1"
-        >
-          ไปยังระบบยื่นคำร้องออนไลน์
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
 
-      {/* Filters and search */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col sm:flex-row justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 sm:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors ${
-                selectedCategory === cat
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-emerald-50"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative min-w-[240px]">
-          <input
-            type="text"
-            placeholder="ค้นหาชื่อแบบฟอร์มหรือรหัส..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
-          />
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2" />
-        </div>
-      </div>
-
-      {/* Documents table / list */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-xs divide-y divide-gray-100">
-        {filtered.map((doc) => (
-          <div
-            key={doc.id}
-            className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-emerald-50/20 transition-colors"
+        <div className="card mt-5 p-4 sm:p-5">
+          <form
+            action="/documents"
+            method="get"
+            role="search"
+            className="flex flex-col gap-2 sm:flex-row"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded bg-gray-100 border border-gray-200 text-gray-700 shrink-0">
-                <FileText className="w-4 h-4 text-emerald-800" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">
-                    {doc.code}
-                  </span>
-                  <span className="text-[10px] text-emerald-900 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    {doc.category}
-                  </span>
-                </div>
-                <h3 className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
-                  {doc.title}
-                </h3>
-                <div className="text-[11px] text-gray-400 font-light">
-                  ขนาดไฟล์ {doc.fileSize} • ดาวน์โหลด {doc.downloads} ครั้ง • ปรับปรุง {doc.date}
-                </div>
-              </div>
+            {selectedCategory !== "ทั้งหมด" && (
+              <input type="hidden" name="category" value={selectedCategory} />
+            )}
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+              <input
+                type="search"
+                name="q"
+                defaultValue={params.q ?? ""}
+                placeholder="ค้นหาชื่อเอกสาร รหัสเอกสาร หรือรายละเอียด"
+                aria-label="ค้นหาเอกสารและแบบฟอร์ม"
+                className="input pl-10"
+              />
             </div>
+            <button type="submit" className="btn-primary shrink-0">
+              ค้นหาเอกสาร
+            </button>
+          </form>
 
-            <div className="shrink-0 flex items-center gap-2 self-start sm:self-center">
-              <a
-                href="#download"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
-              >
-                <Download className="w-3 h-3 text-emerald-700" />
-                ดาวน์โหลด ({doc.fileType})
-              </a>
-            </div>
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-xs font-semibold text-gray-500">
+              กลุ่มเอกสาร
+            </span>
+            {documentCategories.map((category) => {
+              const active = selectedCategory === category;
+              return (
+                <Link
+                  key={category}
+                  href={buildQuery(category, params.q ?? "")}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    active
+                      ? "border-emerald-700 bg-emerald-700 text-white"
+                      : "border-gray-200 bg-gray-50 text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+                  }`}
+                >
+                  {category}
+                </Link>
+              );
+            })}
           </div>
-        ))}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+          <p>
+            พบเอกสาร{" "}
+            <span className="font-bold text-emerald-800">
+              {filtered.length}
+            </span>{" "}
+            รายการ
+          </p>
+          {(query || selectedCategory !== "ทั้งหมด") && (
+            <Link
+              href="/documents"
+              className="font-semibold text-emerald-800 hover:underline"
+            >
+              ล้างตัวกรอง
+            </Link>
+          )}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="mt-4 rounded-lg border border-gray-200 bg-white p-12 text-center">
+            <Info className="mx-auto h-8 w-8 text-gray-400" />
+            <h2 className="mt-3 text-base font-bold text-gray-900">
+              ไม่พบเอกสารที่ตรงกับเงื่อนไข
+            </h2>
+            <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-gray-600">
+              ลองใช้คำค้นที่สั้นลง เปลี่ยนกลุ่มเอกสาร
+              หรือดูรายการเอกสารทั้งหมด
+            </p>
+            <Link href="/documents" className="btn-secondary mt-4 text-sm">
+              ดูเอกสารทั้งหมด
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-6">
+            {grouped.map((group) => (
+              <section key={group.category}>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {group.category}
+                  </h2>
+                  <span className="badge-gray">{group.items.length} รายการ</span>
+                </div>
+                <div className="mt-3 divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200 bg-white">
+                  {group.items.map((doc) => (
+                    <Link
+                      key={doc.id}
+                      href={`/documents/${doc.id}`}
+                      className="group flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-emerald-50/40 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+                    >
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-700">
+                          <FileText className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-[0.7rem] font-semibold text-emerald-800">
+                              {doc.code}
+                            </span>
+                            <span className="badge-gray">{doc.fileType}</span>
+                          </div>
+                          <h3 className="mt-1 text-sm font-semibold leading-snug text-gray-900 group-hover:text-emerald-900">
+                            {doc.title}
+                          </h3>
+                          <p className="mt-1 line-clamp-1 text-xs text-gray-500">
+                            {doc.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 pt-2 text-xs text-gray-500 sm:border-0 sm:pt-0">
+                        <span>
+                          {doc.fileType} · {doc.fileSize}
+                          <span className="mx-1.5 text-gray-300">|</span>
+                          ปรับปรุง {doc.updated}
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-emerald-700" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-8 flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">
+              ต้องการยื่นคำร้องหรือคำขอออนไลน์
+            </h2>
+            <p className="mt-0.5 text-sm text-gray-600">
+              ทักท้วงข้อสอบ ขอทราบคะแนน หรือขอคืนค่าธรรมเนียม
+              โดยไม่ต้องพิมพ์เอกสารกระดาษ
+            </p>
+          </div>
+          <Link href="/requests" className="btn-primary shrink-0 text-sm">
+            ไปยังระบบยื่นคำร้อง
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );

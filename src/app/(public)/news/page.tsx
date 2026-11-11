@@ -1,211 +1,405 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Calendar, Eye, Download, ArrowRight, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  CalendarDays,
+  Eye,
+  FileText,
+  Info,
+  Paperclip,
+  Search,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import { newsCategories, newsItems } from "@/data/news";
 
-const allNews = [
-  {
-    id: 1,
-    category: "ประกาศสอบ",
-    title: "ประกาศศูนย์สอบฯ ฉบับที่ 12/2569 เรื่อง กำหนดการและสถานที่จัดสอบ PLE-CC1 ครั้งที่ 1/2569",
-    date: "8 พ.ย. 2568",
-    views: "2,410",
-    isPinned: true,
-    fileSize: "PDF 1.4 MB",
-    summary: "แจ้งรายละเอียดสนามสอบ ศูนย์สอบมหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต มหาวิทยาลัยเชียงใหม่ มหาวิทยาลัยขอนแก่น และมหาวิทยาลัยสงขลานครินทร์ พร้อมกำหนดการวันสอบและสิ่งของที่อนุญาตให้นำเข้าห้องสอบ",
-  },
-  {
-    id: 2,
-    category: "ผลการสอบ",
-    title: "ประกาศผลการพิจารณาคำร้องทักท้วงข้อสอบวิชาชีพเภสัชกรรม ประจำรอบที่ 2/2568",
-    date: "5 พ.ย. 2568",
-    views: "1,850",
-    isPinned: false,
-    fileSize: "PDF 850 KB",
-    summary: "คณะกรรมการศูนย์สอบฯ ได้ประชุมพิจารณาข้อทักท้วงข้อสอบวิชา PLE-CC1 และ PLE-PC1 เสร็จสิ้นแล้ว มีมติยกผลประโยชน์ให้ผู้เข้าสอบในข้อ 42 และ 78 ผู้สอบสามารถตรวจสอบคะแนนใหม่ได้ในระบบ",
-  },
-  {
-    id: 3,
-    category: "ระเบียบการสอบ",
-    title: "ข้อบังคับสภาเภสัชกรรมว่าด้วยเกณฑ์ความรู้ความสามารถทางวิชาชีพของผู้ขอขึ้นทะเบียน (ฉบับปรับปรุง)",
-    date: "1 พ.ย. 2568",
-    views: "3,120",
-    isPinned: false,
-    fileSize: "PDF 2.1 MB",
-    summary: "ปรับปรุงข้อกำหนดเกณฑ์ความรู้ความสามารถและสมรรถนะร่วม (Core Competency) ให้สอดคล้องกับมาตรฐานวิชาชีพสากลและระบบยาในปัจจุบัน เริ่มมีผลบังคับใช้ตั้งแต่รอบสอบ 1/2569 เป็นต้นไป",
-  },
-  {
-    id: 4,
-    category: "สนามสอบ",
-    title: "แจ้งผังที่นั่งสอบและแนวทางการปฏิบัติตนของผู้เข้าสอบ ณ มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต",
-    date: "28 ต.ค. 2568",
-    views: "1,240",
-    isPinned: false,
-    fileSize: "PDF 920 KB",
-    summary: "รายละเอียดการเดินทาง อาคารเรียนรวม SC3 ชั้น 2-4 จุดตรวจบัตรประจำตัวสอบ การแต่งกายที่ถูกต้อง และข้อปฏิบัติเพื่อสุขอนามัย",
-  },
-  {
-    id: 5,
-    category: "ประกาศสอบ",
-    title: "เปิดรับสมัครสอบความรู้และทักษะการบริบาลทางเภสัชกรรม (PLE-PC1) รอบพิเศษ",
-    date: "20 ต.ค. 2568",
-    views: "980",
-    isPinned: false,
-    fileSize: "PDF 1.1 MB",
-    summary: "สำหรับผู้ที่สำเร็จการศึกษาหลักสูตรเภสัชศาสตรบัณฑิต (บริบาลทางเภสัชกรรม) ที่ยังสอบไม่ผ่านในหมวดวิชาดังกล่าว สามารถยื่นเอกสารและชำระค่าธรรมเนียมได้ภายในวันที่ 30 พฤศจิกายน 2568",
-  },
-  {
-    id: 6,
-    category: "ทั่วไป",
-    title: "แนวทางการใช้งานระบบสอบออนไลน์ E-Exam สำหรับผู้เข้าสอบปีการศึกษา 2569",
-    date: "15 ต.ค. 2568",
-    views: "4,520",
-    isPinned: false,
-    fileSize: "PDF 3.4 MB",
-    summary: "คู่มือฉบับสมบูรณ์อธิบายขั้นตอนการล็อกอิน การทำข้อสอบแบบปรนัย การเปลี่ยนข้อคำถาม การทบทวนคำตอบ และการส่งกระดาษคำตอบอิเล็กทรอนิกส์",
-  },
-];
+export const metadata: Metadata = {
+  title: "ข่าวสารและประกาศ",
+  description:
+    "ประกาศรับสมัคร กำหนดการสอบ สนามสอบ ผลการสอบ และข่าวสารอย่างเป็นทางการจากศูนย์สอบความรู้ฯ สภาเภสัชกรรม",
+};
 
-export default function NewsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
-  const [searchQuery, setSearchQuery] = useState("");
+export const instant = false;
 
-  const categories = ["ทั้งหมด", "ประกาศสอบ", "ผลการสอบ", "ระเบียบการสอบ", "สนามสอบ", "ทั่วไป"];
+const PAGE_SIZE = 6;
 
-  const filtered = allNews.filter((item) => {
-    const matchCat = selectedCategory === "ทั้งหมด" || item.category === selectedCategory;
-    const matchSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        item.summary.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchSearch;
-  });
+type NewsSearchParams = {
+  category?: string;
+  q?: string;
+  page?: string;
+};
+
+function buildQuery({
+  category,
+  q,
+  page,
+}: {
+  category?: string;
+  q?: string;
+  page?: number;
+}) {
+  const params = new URLSearchParams();
+  if (category && category !== "ทั้งหมด") params.set("category", category);
+  if (q) params.set("q", q);
+  if (page && page > 1) params.set("page", String(page));
+  const query = params.toString();
+  return query ? `/news?${query}` : "/news";
+}
+
+export default async function NewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<NewsSearchParams>;
+}) {
+  const params = await searchParams;
+  const selectedCategory = newsCategories.includes(
+    (params.category ?? "ทั้งหมด") as (typeof newsCategories)[number],
+  )
+    ? (params.category ?? "ทั้งหมด")
+    : "ทั้งหมด";
+  const query = (params.q ?? "").trim();
+  const normalizedQuery = query.toLowerCase();
+  const requestedPage = Number.parseInt(params.page ?? "1", 10);
+  const currentPage =
+    Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+  const filtered = newsItems
+    .filter((item) => {
+      const matchCategory =
+        selectedCategory === "ทั้งหมด" || item.category === selectedCategory;
+      const matchQuery =
+        !normalizedQuery ||
+        [item.title, item.summary, item.category, item.docCode]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery);
+      return matchCategory && matchQuery;
+    })
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return b.dateISO.localeCompare(a.dateISO);
+    });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const visible = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Breadcrumb & Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">ข่าวสารและประกาศ</span>
-        </nav>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-          ข่าวสารและประกาศศูนย์สอบฯ
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-          ติดตามประกาศระเบียบ กำหนดการสอบ สนามสอบ และประกาศผลการสอบอย่างเป็นทางการจากสภาเภสัชกรรม
-        </p>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-        {/* Category Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-all ${
-                selectedCategory === cat
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-800"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Search input */}
-        <div className="relative min-w-[280px]">
-          <input
-            type="text"
-            placeholder="ค้นหาประกาศ, คำสั่ง, เลขที่..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-4 py-2 rounded-lg border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:border-emerald-600"
-          />
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
-        </div>
-      </div>
-
-      {/* News List */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-            <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-gray-700">ไม่พบข่าวสารหรือประกาศที่ค้นหา</p>
-            <p className="text-xs text-gray-400 mt-1">ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น</p>
+    <div>
+      <PageHeader
+        title="ข่าวสารและประกาศ"
+        description="ติดตามประกาศรับสมัคร กำหนดการสอบ สนามสอบ ผลการสอบ และประกาศอย่างเป็นทางการจากศูนย์สอบฯ"
+        breadcrumbs={[{ label: "ข่าวสารและประกาศ" }]}
+        eyebrow="ข่าวสาร"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">ประกาศทั้งหมด {newsItems.length} ฉบับ</span>
+            <span>ปรับปรุงล่าสุด 10 พฤศจิกายน 2569</span>
           </div>
-        ) : (
-          filtered.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white p-5 rounded-xl border border-gray-200 hover:border-emerald-300 shadow-xs transition-all flex flex-col md:flex-row justify-between gap-5"
+        }
+        actions={
+          <Link href="/search" className="btn-secondary">
+            <Search className="h-4 w-4" />
+            ค้นหาประกาศ
+          </Link>
+        }
+      />
+
+      <div className="container-page grid gap-8 py-8 lg:grid-cols-[1fr_18rem] lg:py-10">
+        <div>
+          <div className="card p-4 sm:p-5">
+            <form
+              action="/news"
+              method="get"
+              role="search"
+              className="flex flex-col gap-2 sm:flex-row"
             >
-              <div className="space-y-1.5 flex-1">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  {item.isPinned && (
-                    <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200 text-[10px] font-bold">
-                      ประกาศสำคัญ
-                    </span>
-                  )}
-                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-medium">
-                    {item.category}
-                  </span>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-500 text-[11px] flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-gray-400" />
-                    {item.date}
-                  </span>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-500 text-[11px] flex items-center gap-1">
-                    <Eye className="w-3 h-3 text-gray-400" />
-                    {item.views} ครั้ง
-                  </span>
-                </div>
-
-                <Link
-                  href={`/news/${item.id}`}
-                  className="text-sm sm:text-base font-bold text-gray-900 hover:text-emerald-800 transition-colors block leading-snug"
-                >
-                  {item.title}
-                </Link>
-
-                <p className="text-xs text-gray-500 line-clamp-2 font-light leading-relaxed">
-                  {item.summary}
-                </p>
+              {selectedCategory !== "ทั้งหมด" && (
+                <input
+                  type="hidden"
+                  name="category"
+                  value={selectedCategory}
+                />
+              )}
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={query}
+                  placeholder="ค้นหาหัวข้อประกาศ เลขที่เอกสาร หรือหมวดหมู่"
+                  aria-label="ค้นหาข่าวสารและประกาศ"
+                  className="input pl-10"
+                />
               </div>
+              <button type="submit" className="btn-primary shrink-0">
+                ค้นหา
+              </button>
+            </form>
 
-              <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-2.5 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
-                <a
-                  href="#download"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
-                >
-                  <Download className="w-3 h-3 text-emerald-700" />
-                  {item.fileSize}
-                </a>
-                <Link
-                  href={`/news/${item.id}`}
-                  className="text-xs font-semibold text-emerald-800 hover:underline flex items-center gap-1"
-                >
-                  อ่านรายละเอียด
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-xs font-semibold text-gray-500">
+                หมวดหมู่
+              </span>
+              {newsCategories.map((category) => {
+                const active = selectedCategory === category;
+                return (
+                  <Link
+                    key={category}
+                    href={buildQuery({ category, q: query })}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                      active
+                        ? "border-emerald-700 bg-emerald-700 text-white"
+                        : "border-gray-200 bg-gray-50 text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
+                    }`}
+                  >
+                    {category}
+                  </Link>
+                );
+              })}
             </div>
-          ))
-        )}
-      </div>
+          </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-center gap-2 pt-4">
-        <button className="px-3 py-1.5 text-xs text-gray-500 rounded border border-gray-200 bg-white hover:bg-gray-50">« ย้อนกลับ</button>
-        <button className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-700 rounded">1</button>
-        <button className="px-3 py-1.5 text-xs text-gray-700 rounded border border-gray-200 bg-white hover:bg-gray-50">2</button>
-        <button className="px-3 py-1.5 text-xs text-gray-700 rounded border border-gray-200 bg-white hover:bg-gray-50">3</button>
-        <span className="text-gray-400 text-xs">...</span>
-        <button className="px-3 py-1.5 text-xs text-gray-500 rounded border border-gray-200 bg-white hover:bg-gray-50">ถัดไป »</button>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+            <p>
+              {query ? (
+                <>
+                  ผลการค้นหาสำหรับ{" "}
+                  <span className="font-semibold text-gray-900">
+                    “{query}”
+                  </span>{" "}
+                  พบ{" "}
+                  <span className="font-bold text-emerald-800">
+                    {filtered.length}
+                  </span>{" "}
+                  รายการ
+                </>
+              ) : (
+                <>
+                  ประกาศในหมวด{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedCategory}
+                  </span>{" "}
+                  จำนวน{" "}
+                  <span className="font-bold text-emerald-800">
+                    {filtered.length}
+                  </span>{" "}
+                  รายการ
+                </>
+              )}
+            </p>
+            {(query || selectedCategory !== "ทั้งหมด") && (
+              <Link
+                href="/news"
+                className="text-sm font-semibold text-emerald-800 hover:underline"
+              >
+                ล้างตัวกรอง
+              </Link>
+            )}
+          </div>
+
+          {visible.length === 0 ? (
+            <div className="mt-4 rounded-lg border border-gray-200 bg-white p-12 text-center">
+              <Info className="mx-auto h-8 w-8 text-gray-400" />
+              <h2 className="mt-3 text-base font-bold text-gray-900">
+                ไม่พบประกาศที่ตรงกับเงื่อนไข
+              </h2>
+              <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-gray-600">
+                ลองใช้คำค้นที่สั้นลง เปลี่ยนหมวดหมู่
+                หรือตรวจสอบการสะกดคำอีกครั้ง
+              </p>
+              <Link href="/news" className="btn-secondary mt-4 text-sm">
+                ดูประกาศทั้งหมด
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {visible.map((item) => (
+                <article
+                  key={item.id}
+                  className="card p-5 transition-colors hover:border-emerald-400"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    {item.pinned && (
+                      <span className="badge-amber">
+                        <Bell className="h-3 w-3" />
+                        ประกาศสำคัญ
+                      </span>
+                    )}
+                    <span className="badge-green">{item.category}</span>
+                    <span className="flex items-center gap-1 text-gray-500">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {item.date}
+                    </span>
+                    <span className="flex items-center gap-1 text-gray-500">
+                      <Eye className="h-3.5 w-3.5" />
+                      {item.views.toLocaleString("th-TH")} ครั้ง
+                    </span>
+                    {item.attachments && item.attachments.length > 0 && (
+                      <span className="flex items-center gap-1 text-gray-500">
+                        <Paperclip className="h-3.5 w-3.5" />
+                        {item.attachments.length} ไฟล์แนบ
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/news/${item.id}`}
+                    className="mt-2.5 block text-base font-bold leading-snug text-gray-900 hover:text-emerald-800 sm:text-lg"
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-gray-600">
+                    {item.summary}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
+                    <span className="font-mono text-[0.7rem] text-gray-400">
+                      {item.docCode}
+                    </span>
+                    <Link
+                      href={`/news/${item.id}`}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-800 hover:underline"
+                    >
+                      อ่านประกาศฉบับเต็ม
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <nav
+              aria-label="การแบ่งหน้า"
+              className="mt-6 flex flex-wrap items-center justify-center gap-1.5"
+            >
+              {safePage > 1 ? (
+                <Link
+                  href={buildQuery({
+                    category: selectedCategory,
+                    q: query,
+                    page: safePage - 1,
+                  })}
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  ก่อนหน้า
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-400">
+                  <ArrowLeft className="h-4 w-4" />
+                  ก่อนหน้า
+                </span>
+              )}
+
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                (page) => (
+                  <Link
+                    key={page}
+                    href={buildQuery({
+                      category: selectedCategory,
+                      q: query,
+                      page,
+                    })}
+                    aria-current={page === safePage ? "page" : undefined}
+                    className={`flex h-9 w-9 items-center justify-center rounded-md border text-sm font-semibold ${
+                      page === safePage
+                        ? "border-emerald-700 bg-emerald-700 text-white"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                ),
+              )}
+
+              {safePage < totalPages ? (
+                <Link
+                  href={buildQuery({
+                    category: selectedCategory,
+                    q: query,
+                    page: safePage + 1,
+                  })}
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  ถัดไป
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-400">
+                  ถัดไป
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              )}
+            </nav>
+          )}
+        </div>
+
+        <aside className="space-y-4">
+          <div className="card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+              <Bell className="h-4 w-4 text-emerald-700" />
+              ประกาศที่ควรติดตาม
+            </h2>
+            <ul className="mt-3 space-y-3">
+              {newsItems
+                .filter((item) => item.pinned)
+                .map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={`/news/${item.id}`}
+                      className="group block"
+                    >
+                      <span className="badge-amber">{item.category}</span>
+                      <span className="mt-1.5 block text-sm font-semibold leading-snug text-gray-900 group-hover:text-emerald-800">
+                        {item.title}
+                      </span>
+                      <span className="mt-1 block text-xs text-gray-500">
+                        {item.date}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-emerald-950">
+              <FileText className="h-4 w-4" />
+              เอกสารและแบบฟอร์ม
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-emerald-900">
+              แบบฟอร์มคำขอ คู่มือการสอบ และระเบียบที่เกี่ยวข้อง
+              สามารถเปิดดูรายละเอียดและพิมพ์เอกสารได้
+            </p>
+            <Link
+              href="/documents"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-900 hover:underline"
+            >
+              ไปยังศูนย์เอกสาร
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="card p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900">
+              <Search className="h-4 w-4 text-emerald-700" />
+              ค้นหาข้อมูลอื่น
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              ค้นหาหน้าเว็บ ประกาศ และเอกสารทั้งหมดได้จากระบบค้นหากลาง
+            </p>
+            <Link href="/search" className="btn-secondary mt-3 w-full text-sm">
+              ค้นหาเว็บไซต์
+            </Link>
+          </div>
+        </aside>
       </div>
     </div>
   );

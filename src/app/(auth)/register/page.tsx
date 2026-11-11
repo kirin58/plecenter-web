@@ -3,7 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserPlus } from "lucide-react";
+import { Info, UserPlus } from "lucide-react";
+
+const faculties = [
+  "จุฬาลงกรณ์มหาวิทยาลัย",
+  "มหาวิทยาลัยมหิดล",
+  "มหาวิทยาลัยเชียงใหม่",
+  "มหาวิทยาลัยขอนแก่น",
+  "มหาวิทยาลัยสงขลานครินทร์",
+  "มหาวิทยาลัยศิลปากร",
+  "มหาวิทยาลัยธรรมศาสตร์",
+  "สถาบันการศึกษาอื่น ๆ ทั้งในและต่างประเทศ",
+];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,102 +30,143 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-      <div className="text-center space-y-1">
-        <h1 className="text-lg font-bold text-gray-900">ลงทะเบียนผู้สมัครสอบใหม่</h1>
-        <p className="text-xs text-gray-500 font-light">
+    <div className="card p-6 sm:p-8">
+      <div className="text-center">
+        <h1 className="text-xl font-bold text-gray-900">
+          ลงทะเบียนผู้สมัครสอบใหม่
+        </h1>
+        <p className="mt-1 text-sm leading-6 text-gray-600">
           สร้างบัญชีผู้ใช้งานสำหรับการสอบความรู้ทางวิชาชีพเภสัชกรรม
         </p>
       </div>
 
-      <form onSubmit={handleRegister} className="space-y-3.5 text-xs">
+      <form onSubmit={handleRegister} className="mt-6 space-y-4">
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">
-            เลขประจำตัวประชาชน (13 หลัก) *
+          <label htmlFor="register-national-id" className="field-label">
+            เลขประจำตัวประชาชน (13 หลัก){" "}
+            <span className="text-red-600">*</span>
           </label>
           <input
+            id="register-national-id"
             type="text"
             required
+            inputMode="numeric"
+            maxLength={13}
+            autoComplete="off"
             placeholder="เช่น 1103701234567"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600 font-mono text-xs"
+            className="input font-mono"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block font-semibold text-gray-700 mb-1">ชื่อ (ภาษาไทย) *</label>
+            <label htmlFor="register-first-name" className="field-label">
+              ชื่อ (ภาษาไทย) <span className="text-red-600">*</span>
+            </label>
             <input
+              id="register-first-name"
               type="text"
               required
+              autoComplete="given-name"
               placeholder="สมชาย"
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
+              className="input"
             />
           </div>
           <div>
-            <label className="block font-semibold text-gray-700 mb-1">นามสกุล (ภาษาไทย) *</label>
+            <label htmlFor="register-last-name" className="field-label">
+              นามสกุล (ภาษาไทย) <span className="text-red-600">*</span>
+            </label>
             <input
+              id="register-last-name"
               type="text"
               required
+              autoComplete="family-name"
               placeholder="ใจดีบริสุทธิ์"
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
+              className="input"
             />
           </div>
         </div>
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">อีเมลติดต่อทางการ *</label>
+          <label htmlFor="register-email" className="field-label">
+            อีเมลติดต่อทางการ <span className="text-red-600">*</span>
+          </label>
           <input
+            id="register-email"
             type="email"
             required
-            placeholder="somchai.j@example.com"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
+            autoComplete="email"
+            placeholder="name@example.com"
+            className="input"
           />
         </div>
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">คณะเภสัชศาสตร์ สถาบันที่สำเร็จการศึกษา *</label>
-          <select className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600">
-            <option>จุฬาลงกรณ์มหาวิทยาลัย</option>
-            <option>มหาวิทยาลัยมหิดล</option>
-            <option>มหาวิทยาลัยเชียงใหม่</option>
-            <option>มหาวิทยาลัยขอนแก่น</option>
-            <option>มหาวิทยาลัยสงขลานครินทร์</option>
-            <option>มหาวิทยาลัยศิลปากร</option>
-            <option>มหาวิทยาลัยธรรมศาสตร์</option>
-            <option>สถาบันการศึกษาอื่นๆ ทั้งในและต่างประเทศ</option>
+          <label htmlFor="register-faculty" className="field-label">
+            คณะเภสัชศาสตร์ สถาบันที่สำเร็จการศึกษา{" "}
+            <span className="text-red-600">*</span>
+          </label>
+          <select id="register-faculty" className="select" defaultValue={faculties[0]}>
+            {faculties.map((faculty) => (
+              <option key={faculty} value={faculty}>
+                {faculty}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="block font-semibold text-gray-700 mb-1">กำหนดรหัสผ่าน (อย่างน้อย 8 ตัวอักษร) *</label>
+          <label htmlFor="register-password" className="field-label">
+            กำหนดรหัสผ่าน (อย่างน้อย 8 ตัวอักษร){" "}
+            <span className="text-red-600">*</span>
+          </label>
           <input
+            id="register-password"
             type="password"
             required
-            placeholder="••••••••"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-emerald-600"
+            minLength={8}
+            autoComplete="new-password"
+            placeholder="กรอกรหัสผ่าน"
+            className="input"
           />
         </div>
 
-        <div className="flex items-start gap-2 pt-1 text-[11px] text-gray-600">
-          <input type="checkbox" required className="mt-0.5 rounded text-emerald-700" />
+        <label className="flex items-start gap-2.5 rounded-md border border-gray-200 bg-gray-50 p-3.5 text-sm leading-6 text-gray-700">
+          <input
+            type="checkbox"
+            required
+            className="mt-1 h-4 w-4 shrink-0 accent-emerald-700"
+          />
           <span>
-            ข้าพเจ้ายินยอมให้สภาเภสัชกรรมเก็บและประมวลผลข้อมูลส่วนบุคคลตามนโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)
+            ข้าพเจ้ายินยอมให้สภาเภสัชกรรมเก็บและประมวลผลข้อมูลส่วนบุคคล
+            ตามนโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)
           </span>
-        </div>
+        </label>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors flex items-center justify-center gap-1.5"
+          className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-70"
         >
-          <UserPlus className="w-3.5 h-3.5" />
+          <UserPlus className="h-4 w-4" />
           {loading ? "กำลังบันทึกข้อมูล..." : "ลงทะเบียนผู้สมัครสอบ"}
         </button>
       </form>
 
-      <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+      <div className="notice mt-5 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <p className="leading-6">
+          แบบฟอร์มนี้เป็นการสาธิต ยังไม่มีการบันทึกข้อมูลจริง
+          กรุณาอย่าใช้ข้อมูลส่วนบุคคลจริงในการทดลอง
+        </p>
+      </div>
+
+      <div className="mt-5 border-t border-gray-200 pt-4 text-center text-sm text-gray-600">
         มีบัญชีผู้ใช้งานอยู่แล้ว?{" "}
-        <Link href="/auth/login" className="font-semibold text-emerald-800 hover:underline">
+        <Link
+          href="/login"
+          className="font-semibold text-emerald-800 hover:underline"
+        >
           เข้าสู่ระบบ
         </Link>
       </div>

@@ -1,286 +1,399 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, MapPin, Download, CheckCircle2, Clock, FileText, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock,
+  FileText,
+  Info,
+  MapPin,
+  ShieldCheck,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import PrintButton from "@/components/ui/PrintButton";
+import { examRounds } from "@/data/site";
 
-interface CalendarEvent {
-  id: number;
-  year: number;
-  examCode: string;
-  name: string;
-  type: string;
-  registrationDate: string;
-  examDate: string;
-  resultDate: string;
-  venue: string;
-  status: "เปิดรับสมัคร" | "ปิดรับสมัคร" | "กำลังจัดสอบ" | "เตรียมเปิดรับ" | "เสร็จสิ้น";
-  statusColor: string;
-}
+export const metadata: Metadata = {
+  title: "ปฏิทินและกำหนดการสอบ",
+  description:
+    "ตารางการสอบความรู้และทักษะทางวิชาชีพเภสัชกรรม กำหนดรับสมัคร วันสอบ สนามสอบ และกำหนดการเตรียมความพร้อม",
+};
 
-const calendarData: CalendarEvent[] = [
+export const instant = false;
+
+type CalendarView = "open" | "closed" | "prep";
+
+const views: { key: CalendarView; label: string; description: string }[] = [
   {
-    id: 1,
-    year: 2569,
-    examCode: "PLE-CC1",
-    name: "ความรู้ความสามารถร่วมทางเภสัชกรรม (Core Competency 1)",
-    type: "ปรนัย MCQ (150 ข้อ)",
-    registrationDate: "1 พ.ย. 68 - 15 ธ.ค. 68",
-    examDate: "18 มกราคม 2569",
-    resultDate: "15 กุมภาพันธ์ 2569",
-    venue: "ศูนย์สอบ 4 ภูมิภาค (มธ.รังสิต, มช., มข., มอ.)",
-    status: "เปิดรับสมัคร",
-    statusColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    key: "open",
+    label: "รอบสอบที่เปิดรับสมัคร",
+    description: "รายวิชาที่สามารถยื่นสมัครได้ในขณะนี้",
   },
   {
-    id: 2,
-    year: 2569,
-    examCode: "PLE-PC1",
-    name: "ความรู้ทางวิชาชีพด้านการบริบาลทางเภสัชกรรม (Pharmacy Care 1)",
-    type: "ปรนัย MCQ ประยุกต์กรณีศึกษา",
-    registrationDate: "1 พ.ย. 68 - 15 ธ.ค. 68",
-    examDate: "19 มกราคม 2569",
-    resultDate: "15 กุมภาพันธ์ 2569",
-    venue: "ศูนย์สอบส่วนกลาง และศูนย์ภูมิภาค",
-    status: "เปิดรับสมัคร",
-    statusColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    key: "closed",
+    label: "รอบสอบที่ปิดรับสมัคร",
+    description: "รอบสอบที่สิ้นสุดการรับสมัครแล้ว",
   },
   {
-    id: 3,
-    year: 2569,
-    examCode: "PLE-IP1",
-    name: "ความรู้ทางวิชาชีพด้านเภสัชกรรมอุตสาหการ (Industrial Pharmacy 1)",
-    type: "ปรนัย MCQ การผลิตและการประกันคุณภาพยา",
-    registrationDate: "1 ธ.ค. 68 - 5 ม.ค. 69",
-    examDate: "25 มกราคม 2569",
-    resultDate: "20 กุมภาพันธ์ 2569",
-    venue: "ศูนย์สอบมหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต",
-    status: "เตรียมเปิดรับ",
-    statusColor: "bg-amber-50 text-amber-800 border-amber-200",
-  },
-  {
-    id: 4,
-    year: 2569,
-    examCode: "PLE-CC2",
-    name: "การสอบประเมินทักษะและสมรรถนะร่วมทางวิชาชีพ (OSPE)",
-    type: "สถานการณ์จำลอง OSPE 16 ฐาน",
-    registrationDate: "5 ม.ค. 69 - 25 ม.ค. 69",
-    examDate: "14 - 15 กุมภาพันธ์ 2569",
-    resultDate: "15 มีนาคม 2569",
-    venue: "คณะเภสัชศาสตร์ มหาวิทยาลัยเครือข่าย 8 แห่ง",
-    status: "เตรียมเปิดรับ",
-    statusColor: "bg-gray-50 text-gray-700 border-gray-200",
-  },
-  {
-    id: 5,
-    year: 2569,
-    examCode: "PLE-PC2",
-    name: "การสอบประเมินทักษะการบริบาลทางเภสัชกรรม (OSCE)",
-    type: "การให้คำปรึกษาและแก้ไขปัญหาการใช้ยาแก่ผู้ป่วยจำลอง",
-    registrationDate: "1 ก.พ. 69 - 20 ก.พ. 69",
-    examDate: "7 - 8 มีนาคม 2569",
-    resultDate: "31 มีนาคม 2569",
-    venue: "ศูนย์สอบโรงพยาบาลและสถาบันเครือข่าย",
-    status: "เตรียมเปิดรับ",
-    statusColor: "bg-gray-50 text-gray-700 border-gray-200",
-  },
-  {
-    id: 6,
-    year: 2568,
-    examCode: "PLE-CC1",
-    name: "ความรู้ความสามารถร่วมทางเภสัชกรรม ครั้งที่ 2/2568",
-    type: "ปรนัย MCQ",
-    registrationDate: "15 พ.ค. 68 - 15 มิ.ย. 68",
-    examDate: "19 กรกฎาคม 2568",
-    resultDate: "15 สิงหาคม 2568",
-    venue: "ศูนย์สอบ มธ. รังสิต",
-    status: "เสร็จสิ้น",
-    statusColor: "bg-gray-50 text-gray-500 border-gray-200",
-  },
-  {
-    id: 7,
-    year: 2570,
-    examCode: "PLE-CC1 & PC1",
-    name: "การสอบรอบที่ 1 ประจำปี พ.ศ. 2570 (แผนงานล่วงหน้า)",
-    type: "E-Exam ออนไลน์เต็มรูปแบบ",
-    registrationDate: "พฤศจิกายน 2569",
-    examDate: "มกราคม 2570",
-    resultDate: "กุมภาพันธ์ 2570",
-    venue: "ศูนย์สอบ E-Exam ทั่วประเทศ",
-    status: "เตรียมเปิดรับ",
-    statusColor: "bg-teal-50 text-teal-800 border-teal-200",
+    key: "prep",
+    label: "กำหนดการเตรียมความพร้อม",
+    description: "ลำดับขั้นตอนตั้งแต่การสมัครจนถึงการประกาศผล",
   },
 ];
 
-export default function CalendarPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(2569);
-  const [selectedFilter, setSelectedFilter] = useState<string>("ทั้งหมด");
+const preparationSchedule = [
+  {
+    date: "1 พฤศจิกายน 2569",
+    title: "เปิดรับสมัครสอบครั้งที่ 1/2570",
+    description:
+      "ผู้สมัครยื่นใบสมัครออนไลน์ เลือกรายวิชาและสนามสอบ พร้อมแนบเอกสารประกอบ",
+  },
+  {
+    date: "15 ธันวาคม 2569",
+    title: "ปิดรับสมัครและชำระค่าธรรมเนียม",
+    description:
+      "ระบบปิดรับสมัครเวลา 23:59 น. ผู้สมัครต้องชำระค่าธรรมเนียมให้เสร็จสิ้นภายในวันดังกล่าว",
+  },
+  {
+    date: "5 มกราคม 2570",
+    title: "ประกาศรายชื่อผู้มีสิทธิ์สอบ",
+    description:
+      "ตรวจสอบรายชื่อ สนามสอบ ห้องสอบ และเลขที่นั่งสอบผ่านระบบตรวจสอบสถานะ",
+  },
+  {
+    date: "16 มกราคม – 13 กุมภาพันธ์ 2570",
+    title: "วันสอบข้อเขียนและวันสอบทักษะ",
+    description:
+      "การสอบข้อเขียนแบบ E-Exam และการสอบทักษะ OSPE ตามวัน เวลา และสถานที่ที่กำหนด",
+  },
+  {
+    date: "ภายใน 30 วันหลังวันสอบ",
+    title: "ประกาศผลการสอบ",
+    description:
+      "ศูนย์สอบฯ เผยแพร่ผลการสอบอย่างเป็นทางการผ่านระบบตรวจสอบผลสอบ",
+  },
+];
 
-  const years = [2568, 2569, 2570, 2571];
-  const filters = ["ทั้งหมด", "PLE-CC1", "PLE-PC1", "PLE-IP1", "PLE-CC2", "PLE-PC2"];
+function isOpenView(view: string): view is CalendarView {
+  return view === "open" || view === "closed" || view === "prep";
+}
 
-  const filteredEvents = calendarData.filter((evt) => {
-    const matchYear = evt.year === selectedYear;
-    const matchCode = selectedFilter === "ทั้งหมด" || evt.examCode.includes(selectedFilter);
-    return matchYear && matchCode;
-  });
+export default async function CalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const params = await searchParams;
+  const activeView = isOpenView(params.view ?? "") ? params.view : "open";
+
+  const openRounds = examRounds.filter(
+    (round) => round.status === "เปิดรับสมัคร",
+  );
+  const closedRounds = examRounds.filter(
+    (round) => round.status !== "เปิดรับสมัคร",
+  );
+
+  const rounds = activeView === "open" ? openRounds : closedRounds;
+  const totalFee = openRounds.reduce((total, round) => total + round.fee, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Breadcrumb & Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">ปฏิทินสอบ</span>
-        </nav>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-              ปฏิทินและกำหนดการสอบวิชาชีพเภสัชกรรม
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-              ตารางกำหนดการรับสมัคร วันสอบ วันประกาศผล สำหรับการสอบความรู้และทักษะทางวิชาชีพ
-            </p>
+    <div>
+      <PageHeader
+        title="ปฏิทินและกำหนดการสอบ"
+        description="ตารางการสอบความรู้และทักษะทางวิชาชีพเภสัชกรรม กำหนดรับสมัคร วันสอบ สนามสอบ และกำหนดการเตรียมความพร้อม"
+        breadcrumbs={[{ label: "การสอบ", href: "/calendar" }, { label: "ปฏิทินและกำหนดการสอบ" }]}
+        eyebrow="การสอบ"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">
+              เปิดรับสมัคร {openRounds.length} รายวิชา
+            </span>
+            <span>ครั้งที่ 1/2570 · ถึงวันที่ 15 ธันวาคม 2569</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="px-3.5 py-2 text-xs font-semibold text-emerald-900 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors flex items-center gap-1.5 shadow-xs">
-              <Calendar className="w-3.5 h-3.5 text-emerald-700" />
-              เพิ่มเข้า Google Calendar
-            </button>
-            <button className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-700 rounded-lg hover:bg-emerald-800 transition-colors flex items-center gap-1.5 shadow-xs">
-              <Download className="w-3.5 h-3.5" />
-              ดาวน์โหลดตารางสอบ PDF
-            </button>
+        }
+        actions={
+          <>
+            <PrintButton label="พิมพ์ตารางสอบ" />
+            <Link href="/apply" className="btn-primary">
+              สมัครสอบออนไลน์
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </>
+        }
+      />
+
+      <div className="container-page py-8 lg:py-10">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+              <CalendarDays className="h-4 w-4 text-emerald-700" />
+              ช่วงรับสมัคร
+            </div>
+            <div className="mt-1.5 text-sm font-bold text-gray-900">
+              1 พ.ย. – 15 ธ.ค. 2569
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+              <Clock className="h-4 w-4 text-emerald-700" />
+              วันสอบข้อเขียน
+            </div>
+            <div className="mt-1.5 text-sm font-bold text-gray-900">
+              16 – 24 มกราคม 2570
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+              <ShieldCheck className="h-4 w-4 text-emerald-700" />
+              วันสอบทักษะ
+            </div>
+            <div className="mt-1.5 text-sm font-bold text-gray-900">
+              30 ม.ค. – 13 ก.พ. 2570
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Year Selector Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200">
-        {years.map((yr) => (
-          <button
-            key={yr}
-            onClick={() => setSelectedYear(yr)}
-            className={`pb-3 px-4 text-xs font-bold transition-all relative ${
-              selectedYear === yr
-                ? "text-emerald-800 font-bold"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
-          >
-            ปฏิทินปี {yr}
-            {selectedYear === yr && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-700 rounded-full" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Subject Filter */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <span className="text-gray-500 mr-2 font-medium">กรองรายวิชา:</span>
-        {filters.map((f) => (
-          <button
-            key={f}
-            onClick={() => setSelectedFilter(f)}
-            className={`px-3 py-1 rounded whitespace-nowrap transition-colors ${
-              selectedFilter === f
-                ? "bg-emerald-100 text-emerald-900 font-bold border border-emerald-300"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {/* Calendar Event Cards */}
-      <div className="space-y-3">
-        {filteredEvents.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-            <Calendar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-gray-700">ยังไม่มีกำหนดการสอบในเงื่อนไขที่เลือก</p>
-            <p className="text-xs text-gray-400 mt-1">สามารถติดตามประกาศเพิ่มเติมได้ที่หน้าข่าวสาร</p>
+        <div className="mt-5 rounded-lg border border-gray-200 bg-white p-2">
+          <div className="grid gap-1 sm:grid-cols-3">
+            {views.map((view) => {
+              const active = activeView === view.key;
+              return (
+                <Link
+                  key={view.key}
+                  href={`/calendar?view=${view.key}`}
+                  aria-current={active ? "page" : undefined}
+                  className={`rounded-md px-4 py-3 transition-colors ${
+                    active
+                      ? "bg-emerald-700 text-white"
+                      : "text-gray-700 hover:bg-emerald-50"
+                  }`}
+                >
+                  <div className="text-sm font-bold">{view.label}</div>
+                  <div
+                    className={`mt-0.5 text-xs ${
+                      active ? "text-emerald-100" : "text-gray-500"
+                    }`}
+                  >
+                    {view.description}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        ) : (
-          filteredEvents.map((evt) => (
-            <div
-              key={evt.id}
-              className="bg-white p-5 rounded-xl border border-gray-200 hover:border-emerald-300 shadow-xs transition-all space-y-4"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono font-bold text-xs border border-emerald-200">
-                    {evt.examCode}
-                  </span>
-                  <span className="text-[11px] text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                    {evt.type}
-                  </span>
-                </div>
-                <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border w-fit ${evt.statusColor}`}>
-                  {evt.status}
-                </span>
-              </div>
+        </div>
 
+        {activeView === "prep" ? (
+          <section className="mt-5">
+            <div className="card p-5 sm:p-7">
+              <h2 className="text-lg font-bold text-gray-900">
+                กำหนดการเตรียมความพร้อมสำหรับการสอบครั้งที่ 1/2570
+              </h2>
+              <p className="mt-1 text-sm text-gray-600">
+                ผู้เข้าสอบควรติดตามประกาศของศูนย์สอบฯ และดำเนินการตามลำดับดังนี้
+              </p>
+
+              <ol className="mt-6">
+                {preparationSchedule.map((item, index) => (
+                  <li
+                    key={item.title}
+                    className="relative flex gap-4 pb-7 last:pb-0"
+                  >
+                    {index < preparationSchedule.length - 1 && (
+                      <span
+                        className="absolute left-[1.1rem] top-9 h-[calc(100%-2rem)] w-px bg-emerald-200"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-emerald-50 text-sm font-bold text-emerald-800">
+                      {index + 1}
+                    </span>
+                    <div className="pt-0.5">
+                      <div className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+                        {item.date}
+                      </div>
+                      <h3 className="mt-0.5 text-sm font-bold text-gray-900">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1 text-sm leading-6 text-gray-600">
+                        {item.description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="notice mt-4">
+              <Info className="mt-0.5 h-5 w-5 shrink-0" />
+              <p className="leading-6">
+                กำหนดการอาจมีการเปลี่ยนแปลงตามประกาศอย่างเป็นทางการของศูนย์สอบฯ
+                กรุณาตรวจสอบข่าวสารและประกาศก่อนดำเนินการทุกครั้ง
+              </p>
+            </div>
+          </section>
+        ) : (
+          <section className="mt-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-base font-bold text-gray-900">
-                  {evt.name}
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                  สถานที่จัดสอบ: {evt.venue}
+                <h2 className="text-lg font-bold text-gray-900">
+                  {activeView === "open"
+                    ? "รายวิชาที่เปิดรับสมัคร"
+                    : "รายวิชาที่ปิดรับสมัครแล้ว"}
+                </h2>
+                <p className="mt-0.5 text-sm text-gray-600">
+                  {activeView === "open"
+                    ? `ค่าธรรมเนียมรวมทุกรายวิชา ${totalFee.toLocaleString("th-TH")} บาท`
+                    : "รอบสอบเหล่านี้สิ้นสุดการรับสมัครแล้ว"}
                 </p>
               </div>
-
-              {/* Milestones */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-gray-100 text-xs">
-                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 space-y-1">
-                  <span className="text-gray-500 font-medium text-[11px]">1. ช่วงรับสมัครสอบ</span>
-                  <div className="font-bold text-gray-900">
-                    {evt.registrationDate}
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 space-y-1">
-                  <span className="text-emerald-900 font-bold text-[11px]">2. วันที่ทำการจัดสอบ</span>
-                  <div className="font-bold text-emerald-950">
-                    {evt.examDate}
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 space-y-1">
-                  <span className="text-gray-500 font-medium text-[11px]">3. ประกาศผลการสอบ</span>
-                  <div className="font-bold text-gray-900">
-                    {evt.resultDate}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action row */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                <span className="text-[11px] text-gray-400">
-                  * กำหนดการอาจมีการเปลี่ยนแปลงตามประกาศอย่างเป็นทางการของสภาเภสัชกรรม
-                </span>
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/regulations"
-                    className="px-3 py-1.5 text-xs text-gray-600 hover:text-emerald-800 font-medium"
-                  >
-                    ดูเกณฑ์วิชานี้
-                  </Link>
-                  {evt.status === "เปิดรับสมัคร" && (
-                    <Link
-                      href="/apply"
-                      className="px-4 py-1.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors"
-                    >
-                      สมัครสอบรอบนี้
-                    </Link>
-                  )}
-                </div>
-              </div>
+              <Link
+                href="/regulations"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-800 hover:underline"
+              >
+                ระเบียบและเกณฑ์การสอบ
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-          ))
+
+            {rounds.length === 0 ? (
+              <div className="mt-4 rounded-lg border border-gray-200 bg-white p-10 text-center">
+                <CalendarDays className="mx-auto h-8 w-8 text-gray-400" />
+                <h3 className="mt-3 text-base font-bold text-gray-900">
+                  ยังไม่มีกำหนดการในหมวดนี้
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  ติดตามประกาศเพิ่มเติมได้ที่หน้าข่าวสารและประกาศ
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {rounds.map((round) => (
+                  <article key={round.id} className="card p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="flex h-12 w-20 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-sm font-bold text-emerald-800">
+                          {round.code.replace("PLE-", "")}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="badge-gray">{round.mode}</span>
+                            <span
+                              className={
+                                round.status === "เปิดรับสมัคร"
+                                  ? "badge-green"
+                                  : "badge-gray"
+                              }
+                            >
+                              {round.status}
+                            </span>
+                          </div>
+                          <h3 className="mt-1.5 text-base font-bold leading-snug text-gray-900">
+                            {round.name}
+                          </h3>
+                          <p className="mt-0.5 text-xs text-gray-500">
+                            {round.round} · {round.code}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-left sm:text-right">
+                        <div className="text-xs text-gray-500">ค่าธรรมเนียม</div>
+                        <div className="text-base font-bold text-emerald-800">
+                          {round.fee.toLocaleString("th-TH")} บาท
+                        </div>
+                      </div>
+                    </div>
+
+                    <dl className="mt-4 grid gap-2 border-t border-gray-100 pt-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          วันสอบ
+                        </dt>
+                        <dd className="mt-0.5 font-semibold text-gray-900">
+                          {round.date}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <Clock className="h-3.5 w-3.5" />
+                          เวลาสอบ
+                        </dt>
+                        <dd className="mt-0.5 font-semibold text-gray-900">
+                          {round.time}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <FileText className="h-3.5 w-3.5" />
+                          รับสมัคร
+                        </dt>
+                        <dd className="mt-0.5 font-semibold text-gray-900">
+                          {round.registration}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <MapPin className="h-3.5 w-3.5" />
+                          สนามสอบ
+                        </dt>
+                        <dd className="mt-0.5 font-semibold text-gray-900">
+                          {round.venue}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
+                      <span className="text-xs text-gray-500">
+                        {round.status === "เปิดรับสมัคร"
+                          ? `ปิดรับสมัคร ${round.deadline}`
+                          : `สิ้นสุดการรับสมัครเมื่อ ${round.deadline}`}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href="/regulations"
+                          className="text-sm font-semibold text-emerald-800 hover:underline"
+                        >
+                          ดูเกณฑ์การสอบ
+                        </Link>
+                        {round.status === "เปิดรับสมัคร" ? (
+                          <Link
+                            href="/apply"
+                            className="btn-primary px-3 py-1.5 text-sm"
+                          >
+                            สมัครสอบรายวิชานี้
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        ) : (
+                          <Link
+                            href="/news"
+                            className="btn-neutral px-3 py-1.5 text-sm"
+                          >
+                            ดูประกาศที่เกี่ยวข้อง
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         )}
+
+        <div className="mt-6 flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" />
+            <p className="text-sm leading-6 text-gray-600">
+              กำหนดการสอบอาจมีการเปลี่ยนแปลง
+              กรุณาติดตามประกาศฉบับล่าสุดจากศูนย์สอบฯ
+              และตรวจสอบข้อมูลสนามสอบก่อนวันสอบทุกครั้ง
+            </p>
+          </div>
+          <Link href="/news" className="btn-secondary shrink-0 text-sm">
+            ดูประกาศทั้งหมด
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,166 +1,312 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, MapPin, AlertCircle, Calendar, Eye, Download, ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Eye,
+  FileText,
+  Info,
+  Paperclip,
+  Phone,
+  Printer,
+  ShieldCheck,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import NewsActions from "@/components/news/NewsActions";
+import {
+  getNewsById,
+  getRelatedNews,
+  newsItems,
+  type ContentBlock,
+} from "@/data/news";
+import { siteInfo } from "@/data/site";
 
-interface NewsDetailProps {
-  params: Promise<{ id: string }>;
-}
+export const instant = false;
 
 export function generateStaticParams() {
-  return [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }, { id: "6" }];
+  return newsItems.map((item) => ({ id: String(item.id) }));
 }
 
-export default async function NewsDetailPage({ params }: NewsDetailProps) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params;
+  const item = getNewsById(Number(id));
+  if (!item) return { title: "ไม่พบประกาศ" };
+  return {
+    title: item.title,
+    description: item.summary,
+  };
+}
+
+function ContentBlockView({ block }: { block: ContentBlock }) {
+  if (block.type === "h2") {
+    return <h2>{block.text}</h2>;
+  }
+  if (block.type === "ul") {
+    return (
+      <ul>
+        {block.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    );
+  }
+  if (block.type === "ol") {
+    return (
+      <ol>
+        {block.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ol>
+    );
+  }
+  if (block.type === "note") {
+    return (
+      <div className="notice-warning my-5">
+        <Info className="mt-0.5 h-5 w-5 shrink-0" />
+        <p className="leading-7">{block.text}</p>
+      </div>
+    );
+  }
+  return <p>{block.text}</p>;
+}
+
+export default async function NewsDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const item = getNewsById(Number(id));
+  if (!item) notFound();
+
+  const related = getRelatedNews(item, 3);
+  const index = newsItems.findIndex((news) => news.id === item.id);
+  const previous = index > 0 ? newsItems[index - 1] : null;
+  const next = index < newsItems.length - 1 ? newsItems[index + 1] : null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-gray-500 flex items-center gap-1.5">
-        <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-        <span>/</span>
-        <Link href="/news" className="hover:text-emerald-800">ข่าวสารและประกาศ</Link>
-        <span>/</span>
-        <span className="text-emerald-900 font-medium">ประกาศศูนย์สอบฯ ฉบับที่ 12/2569</span>
-      </nav>
-
-      {/* Article Header */}
-      <div className="bg-white p-6 sm:p-10 rounded-2xl border border-gray-200 shadow-xs space-y-6">
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-medium">
-              ประกาศสอบ
+    <div>
+      <PageHeader
+        title={item.title}
+        breadcrumbs={[
+          { label: "ข่าวสารและประกาศ", href: "/news" },
+          { label: item.category },
+        ]}
+        eyebrow={item.category}
+        meta={
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {item.date}
             </span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-500 text-[11px] flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-gray-400" />
-              8 พฤศจิกายน 2568
+            <span className="flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" />
+              {item.views.toLocaleString("th-TH")} ครั้ง
             </span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-500 text-[11px] flex items-center gap-1">
-              <Eye className="w-3 h-3 text-gray-400" />
-              2,410 ครั้ง
-            </span>
-            <span className="text-gray-300">|</span>
-            <span className="text-gray-500 font-mono text-[11px]">รหัสเอกสาร: PLE-ANN-2569-012</span>
+            <span className="font-mono">{item.docCode}</span>
+            {item.pinned && <span className="badge-amber">ประกาศสำคัญ</span>}
           </div>
+        }
+        actions={
+          <Link href="/news" className="btn-secondary">
+            <ArrowLeft className="h-4 w-4" />
+            กลับรายการประกาศ
+          </Link>
+        }
+      />
 
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
-            ประกาศศูนย์สอบฯ ฉบับที่ 12/2569 เรื่อง กำหนดการและสถานที่จัดสอบ PLE-CC1 ครั้งที่ 1/2569
-          </h1>
-        </div>
-
-        {/* Content Body */}
-        <div className="text-sm text-gray-700 leading-relaxed space-y-4 pt-4 border-t border-gray-100 font-light">
-          <p>
-            ด้วยศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม (ศูนย์สอบฯ) สภาเภสัชกรรม จะดำเนินการจัดสอบความรู้ความสามารถร่วมทางเภสัชกรรม (Pharmacy Licensure Examination - Core Competency 1: PLE-CC1) ครั้งที่ 1 ประจำปี พ.ศ. 2569 เพื่อให้เป็นไปตามข้อบังคับสภาเภสัชกรรมว่าด้วยการขึ้นทะเบียนและรับใบอนุญาตเป็นผู้ประกอบวิชาชีพเภสัชกรรม
-          </p>
-          
-          <h3 className="text-sm font-bold text-gray-900 pt-2">1. กำหนดวันและเวลาสอบ</h3>
-          <p>
-            วันเสาร์ที่ 18 มกราคม พ.ศ. 2569 เวลา 09:00 - 12:00 น. (ระยะเวลาสอบ 3 ชั่วโมง ข้อสอบแบบปรนัย จำนวน 150 ข้อ)
-          </p>
-
-          <h3 className="text-sm font-bold text-gray-900 pt-2">2. ศูนย์สอบและสนามสอบที่เปิดให้บริการ</h3>
-          <ul className="list-disc pl-5 space-y-1">
-            <li><strong>ศูนย์สอบกรุงเทพฯ และปริมณฑล:</strong> มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต อาคารเรียนรวม SC3 ชั้น 2-4</li>
-            <li><strong>ศูนย์สอบภาคเหนือ:</strong> มหาวิทยาลัยเชียงใหม่ อาคาร 50 ปี คณะเภสัชศาสตร์</li>
-            <li><strong>ศูนย์สอบภาคตะวันออกเฉียงเหนือ:</strong> มหาวิทยาลัยขอนแก่น คณะเภสัชศาสตร์ อาคาร 1</li>
-            <li><strong>ศูนย์สอบภาคใต้:</strong> มหาวิทยาลัยสงขลานครินทร์ วิทยาเขตหาดใหญ่ คณะเภสัชศาสตร์</li>
-          </ul>
-
-          <h3 className="text-sm font-bold text-gray-900 pt-2">3. สิ่งของและหลักฐานที่ต้องนำมาในวันสอบ</h3>
-          <ol className="list-decimal pl-5 space-y-1">
-            <li>บัตรประจำตัวประชาชนฉบับจริง หรือหนังสือเดินทาง (Passport) ที่ยังไม่หมดอายุ</li>
-            <li>บัตรประจำตัวผู้สอบ (พิมพ์จากระบบรับสมัครสอบออนไลน์ พร้อมติดรูปถ่ายตามเกณฑ์)</li>
-            <li>ดินสอดำ 2B, ยางลบดินสอ, ปากกาลูกลื่นสีน้ำเงินหรือดำ</li>
-          </ol>
-
-          <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-950 text-xs leading-relaxed space-y-1">
-            <div className="font-bold flex items-center gap-1.5 text-xs text-amber-950">
-              <AlertCircle className="w-4 h-4 text-amber-800" />
-              ข้อควรระวังและระเบียบห้องสอบ
+      <div className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_20rem]">
+        <article>
+          <div className="card p-6 sm:p-9">
+            <div className="notice">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-semibold">
+                  ประกาศฉบับทางการจากศูนย์สอบความรู้ฯ
+                </p>
+                <p className="mt-1 text-sm leading-6">
+                  เอกสารนี้เผยแพร่เพื่อให้ผู้เข้าสอบและผู้ที่เกี่ยวข้องรับทราบข้อมูล
+                  โดยมีผลใช้บังคับตามประกาศฉบับจริงของศูนย์สอบฯ
+                </p>
+              </div>
             </div>
-            <p>
-              ผู้เข้าสอบที่มาถึงห้องสอบช้ากว่าเวลาเริ่มสอบ 15 นาที จะไม่ได้รับอนุญาตให้เข้าห้องสอบโดยเด็ดขาด และห้ามนำอุปกรณ์สื่อสาร เครื่องคิดเลข (ยกเว้นรุ่นที่สภาฯ กำหนด) หรืออุปกรณ์อิเล็กทรอนิกส์ทุกชนิดเข้าห้องสอบ
+
+            <div className="prose-official mt-6">
+              {item.content.map((block, blockIndex) => (
+                <ContentBlockView
+                  key={`${block.type}-${blockIndex}`}
+                  block={block}
+                />
+              ))}
+            </div>
+
+            {item.attachments && item.attachments.length > 0 && (
+              <section className="mt-8 border-t border-gray-200 pt-6">
+                <h2 className="flex items-center gap-2 text-base font-bold text-gray-900">
+                  <Paperclip className="h-5 w-5 text-emerald-700" />
+                  เอกสารแนบท้ายประกาศ
+                </h2>
+                <ul className="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200">
+                  {item.attachments.map((attachment) => (
+                    <li
+                      key={attachment.label}
+                      className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <span className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-700">
+                          <FileText className="h-4 w-4" />
+                        </span>
+                        <span>
+                          <span className="block text-sm font-medium text-gray-900">
+                            {attachment.label}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-gray-500">
+                            {attachment.fileType} · {attachment.size}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-xs text-gray-500">
+                        เอกสารแนบท้ายฉบับทางการ
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs leading-5 text-gray-500">
+                  หากต้องการเอกสารแนบท้ายฉบับที่ประทับตราทางราชการ
+                  กรุณาติดต่อศูนย์สอบฯ หรือดาวน์โหลดจากประกาศฉบับทางการที่เผยแพร่ร่วมกับหนังสือราชการ
+                </p>
+              </section>
+            )}
+
+            <div className="mt-8 border-t border-gray-200 pt-5">
+              <NewsActions />
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                <Printer className="h-3.5 w-3.5" />
+                การพิมพ์หน้านี้จะแสดงเฉพาะเนื้อหาประกาศ โดยไม่มีเมนูเว็บไซต์
+              </p>
+            </div>
+          </div>
+
+          <nav
+            aria-label="ประกาศก่อนหน้าและถัดไป"
+            className="mt-4 grid gap-3 sm:grid-cols-2"
+          >
+            {previous ? (
+              <Link
+                href={`/news/${previous.id}`}
+                className="card group p-4 transition-colors hover:border-emerald-400"
+              >
+                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  ประกาศก่อนหน้า
+                </span>
+                <span className="mt-1.5 line-clamp-2 block text-sm font-medium text-gray-900 group-hover:text-emerald-900">
+                  {previous.title}
+                </span>
+              </Link>
+            ) : (
+              <span className="hidden sm:block" />
+            )}
+            {next && (
+              <Link
+                href={`/news/${next.id}`}
+                className="card group p-4 text-right transition-colors hover:border-emerald-400"
+              >
+                <span className="flex items-center justify-end gap-1 text-xs font-semibold text-emerald-700">
+                  ประกาศถัดไป
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+                <span className="mt-1.5 line-clamp-2 block text-sm font-medium text-gray-900 group-hover:text-emerald-900">
+                  {next.title}
+                </span>
+              </Link>
+            )}
+          </nav>
+        </article>
+
+        <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+          <div className="card p-5">
+            <h2 className="text-sm font-bold text-gray-900">
+              ข้อมูลประกาศ
+            </h2>
+            <dl className="mt-3 space-y-2.5 text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-gray-500">หมวดหมู่</dt>
+                <dd className="text-right font-semibold text-gray-900">
+                  {item.category}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-gray-500">วันที่ประกาศ</dt>
+                <dd className="text-right text-gray-900">{item.date}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-gray-500">รหัสเอกสาร</dt>
+                <dd className="text-right font-mono text-xs font-semibold text-gray-900">
+                  {item.docCode}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-gray-500">ผู้เผยแพร่</dt>
+                <dd className="text-right text-gray-900">ศูนย์สอบความรู้ฯ</dd>
+              </div>
+            </dl>
+          </div>
+
+          {related.length > 0 && (
+            <div className="card p-5">
+              <h2 className="text-sm font-bold text-gray-900">
+                ประกาศที่เกี่ยวข้อง
+              </h2>
+              <ul className="mt-3 space-y-3">
+                {related.map((news) => (
+                  <li key={news.id}>
+                    <Link href={`/news/${news.id}`} className="group block">
+                      <span className="text-xs font-semibold text-emerald-700">
+                        {news.category}
+                      </span>
+                      <span className="mt-0.5 line-clamp-2 block text-sm font-medium leading-snug text-gray-900 group-hover:text-emerald-800">
+                        {news.title}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-gray-500">
+                        {news.date}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-emerald-950">
+              <Phone className="h-4 w-4" />
+              สอบถามประกาศนี้
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-emerald-900">
+              เจ้าหน้าที่ให้บริการในวันและเวลาราชการ
             </p>
-          </div>
-        </div>
-
-        {/* Download Attachments Section */}
-        <div className="pt-6 border-t border-gray-100 space-y-3">
-          <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-            เอกสารแนบท้ายประกาศฉบับทางการ
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <a
-              href="#pdf-download"
-              className="p-3.5 rounded-xl bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 hover:border-emerald-300 flex items-center justify-between transition-colors group"
+              href={`tel:${siteInfo.phoneHref}`}
+              className="mt-2 block text-sm font-semibold text-emerald-900 hover:underline"
             >
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-emerald-800 shrink-0" />
-                <div>
-                  <div className="text-xs font-bold text-gray-900 group-hover:text-emerald-800">
-                    ประกาศศูนย์สอบฯ ฉบับที่ 12/2569 (ฉบับสมบูรณ์)
-                  </div>
-                  <div className="text-[11px] text-gray-500 font-mono">PDF • 1.4 MB • ประทับตราสภาฯ</div>
-                </div>
-              </div>
-              <Download className="w-4 h-4 text-emerald-700" />
+              {siteInfo.phone}
             </a>
-            
-            <a
-              href="#seating-download"
-              className="p-3.5 rounded-xl bg-gray-50 hover:bg-emerald-50/50 border border-gray-200 hover:border-emerald-300 flex items-center justify-between transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-emerald-800 shrink-0" />
-                <div>
-                  <div className="text-xs font-bold text-gray-900 group-hover:text-emerald-800">
-                    ผังอาคารและแผนที่การเดินทาง มธ.รังสิต
-                  </div>
-                  <div className="text-[11px] text-gray-500 font-mono">PDF • 890 KB</div>
-                </div>
-              </div>
-              <Download className="w-4 h-4 text-emerald-700" />
-            </a>
-          </div>
-        </div>
-
-        {/* Action button bar */}
-        <div className="pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">การเผยแพร่:</span>
-            <button className="px-2.5 py-1 text-xs rounded border border-gray-200 hover:bg-gray-50 text-gray-700">
-              คัดลอกลิงก์
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
             <Link
-              href="/scores"
-              className="px-4 py-2 text-xs font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors"
+              href="/contact"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-emerald-900 hover:underline"
             >
-              ตรวจสอบเลขที่นั่งสอบ
-            </Link>
-            <Link
-              href="/apply"
-              className="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors"
-            >
-              ไปยังระบบสมัครสอบ
+              ติดต่อศูนย์สอบฯ
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
-      </div>
-
-      {/* Back button */}
-      <div>
-        <Link
-          href="/news"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:underline"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          กลับสู่หน้ารายการข่าวสารและประกาศ
-        </Link>
+        </aside>
       </div>
     </div>
   );

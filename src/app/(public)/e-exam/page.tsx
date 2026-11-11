@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Monitor, Clock, Flag, CheckCircle2, ShieldCheck, FileText, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
-import { Monitor, Clock, Flag, CheckCircle2, ShieldCheck, FileText, ArrowRight, ArrowLeft } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
 
 export default function EExamPage() {
   const [activeTab, setActiveTab] = useState<"info" | "simulator">("info");
@@ -11,6 +12,7 @@ export default function EExamPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [flagged, setFlagged] = useState<{ [key: number]: boolean }>({});
+  const [simulatorSubmitted, setSimulatorSubmitted] = useState(false);
 
   const sampleQuestions = [
     {
@@ -57,47 +59,41 @@ export default function EExamPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-      {/* Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">ระบบสอบ E-Exam</span>
-        </nav>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-              ระบบการสอบออนไลน์ด้วยคอมพิวเตอร์ (E-Exam)
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-              ศูนย์สอบความรู้ฯ สภาเภสัชกรรม • มาตรฐานความปลอดภัยระดับสากล เที่ยงตรง และโปร่งใส
-            </p>
+    <div>
+      <PageHeader
+        title="ระบบการสอบออนไลน์ด้วยคอมพิวเตอร์ (E-Exam)"
+        description="ระบบสอบดิจิทัลของศูนย์สอบความรู้ฯ สภาเภสัชกรรม ที่ได้มาตรฐานด้านความปลอดภัย ความเที่ยงตรง และความโปร่งใส"
+        breadcrumbs={[{ label: "ระบบ E-Exam" }]}
+        eyebrow="บริการออนไลน์"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">มาตรฐานระบบ E-Exam ปี 2569</span>
+            <span>รองรับการสอบปรนัยและกรณีศึกษา</span>
           </div>
-          <div className="flex items-center gap-2">
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
               onClick={() => setActiveTab("info")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                activeTab === "info"
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-              }`}
+              className={activeTab === "info" ? "btn-primary" : "btn-secondary"}
             >
               ข้อมูลและข้อกำหนด
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab("simulator")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                activeTab === "simulator"
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-              }`}
+              className={
+                activeTab === "simulator" ? "btn-primary" : "btn-secondary"
+              }
             >
-              ระบบทดลองสอบเสมือนจริง (Simulator)
+              ระบบทดลองสอบเสมือนจริง
             </button>
           </div>
-        </div>
-      </div>
+        }
+      />
+
+      <div className="container-page space-y-6 py-8 lg:py-10">
 
       {activeTab === "info" ? (
         <div className="space-y-6">
@@ -121,12 +117,12 @@ export default function EExamPage() {
                   เปิดโปรแกรมจำลอง E-Exam
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-                <a
-                  href="/documents"
+                <Link
+                  href="/documents/9"
                   className="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
                 >
-                  คู่มือการใช้งาน E-Exam (PDF)
-                </a>
+                  คู่มือการใช้งาน E-Exam
+                </Link>
               </div>
             </div>
             <div className="w-16 h-16 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-emerald-800 shrink-0 shadow-xs">
@@ -214,6 +210,17 @@ export default function EExamPage() {
 
           {/* Body */}
           <div className="p-6 sm:p-8 space-y-6">
+            {simulatorSubmitted && (
+              <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+                <p className="font-semibold">
+                  ส่งคำตอบจำลองเรียบร้อยแล้ว
+                </p>
+                <p className="mt-1 leading-6">
+                  ระบบบันทึกคำตอบของท่านครบทุกข้อแล้ว
+                  การส่งคำตอบในระบบทดลองนี้ไม่มีผลต่อผลการสอบจริง
+                </p>
+              </div>
+            )}
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="text-xs font-bold text-gray-900">
                 คำถามข้อที่ {currentQuestion + 1} จาก {sampleQuestions.length}
@@ -258,7 +265,7 @@ export default function EExamPage() {
                             : "border-gray-300"
                         }`}
                       >
-                        {isSelected && "✓"}
+                        {isSelected && <Check className="h-3 w-3" strokeWidth={3} />}
                       </div>
                       <span>{opt}</span>
                     </div>
@@ -317,7 +324,8 @@ export default function EExamPage() {
                 </button>
               ) : (
                 <button
-                  onClick={() => alert("ระบบทดสอบเสร็จสมบูรณ์ - ได้ส่งคำตอบจำลองครบทุกข้อแล้ว")}
+                  type="button"
+                  onClick={() => setSimulatorSubmitted(true)}
                   className="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-xs"
                 >
                   ยืนยันส่งกระดาษคำตอบอิเล็กทรอนิกส์
@@ -327,6 +335,7 @@ export default function EExamPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

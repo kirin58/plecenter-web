@@ -1,104 +1,209 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Download, Monitor, Building2, BookOpen, FileText } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  FileText,
+  GraduationCap,
+  Info,
+  Monitor,
+  ShieldCheck,
+} from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import { getDocumentById } from "@/data/documents";
 
-const guides = [
+export const metadata: Metadata = {
+  title: "คู่มือการสอบ",
+  description:
+    "คู่มือการสมัครสอบ การใช้งานระบบ E-Exam การเตรียมตัวสอบทักษะ และแนวปฏิบัติสำหรับผู้เข้าสอบของศูนย์สอบความรู้ฯ สภาเภสัชกรรม",
+};
+
+const guideEntries = [
   {
-    id: 1,
-    title: "คู่มือการใช้งานระบบสอบออนไลน์ E-Exam ฉบับสมบูรณ์",
-    category: "ระบบสอบ E-Exam",
-    desc: "คำแนะนำตั้งแต่การล็อกอินเข้าสู่ระบบ การเลือกตอบข้อสอบ การใช้งานแถบนำทาง การปักหมุดข้อสอบ และการส่งคำตอบ",
-    pages: "24 หน้า",
-    size: "PDF 3.4 MB",
+    documentId: 8,
+    category: "การสมัครสอบ",
+    title: "คู่มือการสมัครสอบด้วยตนเองสำหรับผู้สำเร็จการศึกษาแล้ว",
+    description:
+      "ขั้นตอนการตรวจสอบคุณสมบัติ การกรอกข้อมูล การแนบเอกสาร และการชำระค่าธรรมเนียมผ่านระบบออนไลน์",
+    icon: FileText,
+  },
+  {
+    documentId: 7,
+    category: "การสมัครสอบ",
+    title: "คู่มือการยื่นสมัครสอบผ่านคณะเภสัชศาสตร์ (คณะส่งสมัคร)",
+    description:
+      "แนวทางสำหรับคณะเภสัชศาสตร์ในการรวบรวมใบสมัคร ตรวจสอบเอกสาร และส่งข้อมูลตามกำหนดการ",
+    icon: GraduationCap,
+  },
+  {
+    documentId: 9,
+    category: "ระบบ E-Exam",
+    title: "คู่มือการสอบด้วยคอมพิวเตอร์ (E-Exam) สำหรับผู้เข้าสอบ",
+    description:
+      "การเข้าสู่ระบบ การทำข้อสอบ การปักหมุดทบทวน และการส่งคำตอบ พร้อมแนวทางแก้ไขปัญหาที่พบบ่อย",
     icon: Monitor,
   },
   {
-    id: 2,
-    title: "คู่มือการเตรียมตัวสอบทักษะวิชาชีพร่วม OSPE (16 สถานี)",
-    category: "การสอบทักษะ OSPE",
-    desc: "ข้อควรปฏิบัติในแต่ละฐาน การบริหารเวลา 5 นาทีต่อสถานี การปฏิบัติตามคำสั่งของกรรมการ และรายการอุปกรณ์ที่จัดเตรียมให้",
-    pages: "36 หน้า",
-    size: "PDF 5.1 MB",
-    icon: Building2,
+    documentId: 10,
+    category: "ระบบ E-Exam",
+    title: "ระเบียบและข้อปฏิบัติการสอบ E-Exam",
+    description:
+      "ระเบียบการเข้าห้องสอบ การใช้อุปกรณ์ และการปฏิบัติตนตลอดระยะเวลาการสอบ",
+    icon: ShieldCheck,
   },
   {
-    id: 3,
-    title: "คู่มือการประเมินทักษะการบริบาลทางเภสัชกรรม OSCE",
-    category: "การสอบทักษะ OSCE",
-    desc: "แนวทางการซักประวัติ การแก้ปัญหาด้านยา (Drug-related Problems) และการสื่อสารกับผู้ป่วยจำลอง (Standardized Patient)",
-    pages: "28 หน้า",
-    size: "PDF 4.2 MB",
+    documentId: 12,
+    category: "การสอบทักษะ",
+    title: "คู่มือทักษะตามเกณฑ์ความรู้ความสามารถทางวิชาชีพ",
+    description:
+      "รายการทักษะวิชาชีพ เกณฑ์การประเมิน และตัวอย่างสถานการณ์สำหรับการสอบภาคทักษะ",
     icon: BookOpen,
   },
   {
-    id: 4,
-    title: "แนวทางการลงทะเบียนและอัปโหลดเอกสารผ่านระบบออนไลน์",
-    category: "การรับสมัคร",
-    desc: "ขั้นตอนการสแกนและรับรองสำเนาเอกสาร ขนาดไฟล์ที่ถูกต้อง และการชำระเงินผ่านระบบ QR Payment",
-    pages: "16 หน้า",
-    size: "PDF 1.8 MB",
-    icon: FileText,
+    documentId: 11,
+    category: "การสอบทักษะ",
+    title: "ระเบียบและข้อปฏิบัติการสอบ PLE-CC2 (OSPE)",
+    description:
+      "ลำดับการเข้าสถานีสอบ ข้อปฏิบัติระหว่างการสอบ และเกณฑ์การให้คะแนนของกรรมการ",
+    icon: ShieldCheck,
   },
 ];
 
-export default function GuidesPage() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* Header */}
-      <div>
-        <nav className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-          <Link href="/" className="hover:text-emerald-800">หน้าแรก</Link>
-          <span>/</span>
-          <span className="text-emerald-800 font-medium">คู่มือการสอบ</span>
-        </nav>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-          คู่มือการสอบและสื่อการเรียนรู้
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-500 mt-1 font-light">
-          เอกสารแนะนำและคู่มือการเตรียมตัวสำหรับการสอบความรู้และทักษะวิชาชีพเภสัชกรรมทุกรูปแบบ
-        </p>
-      </div>
+const categoryOrder = ["การสมัครสอบ", "ระบบ E-Exam", "การสอบทักษะ"];
 
-      {/* Guides Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {guides.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.id}
-              className="p-5 rounded-xl bg-white border border-gray-200 hover:border-emerald-300 shadow-xs transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    {item.category}
-                  </span>
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 font-light leading-relaxed">
-                    {item.desc}
+const categoryDescriptions: Record<string, string> = {
+  การสมัครสอบ: "เอกสารและขั้นตอนการยื่นใบสมัครสอบออนไลน์",
+  "ระบบ E-Exam": "แนวทางการใช้งานระบบสอบคอมพิวเตอร์และระเบียบที่เกี่ยวข้อง",
+  การสอบทักษะ: "การเตรียมความพร้อมสำหรับการสอบภาคทักษะ OSPE และ OSCE",
+};
+
+export default function GuidesPage() {
+  const groups = categoryOrder.map((category) => ({
+    category,
+    entries: guideEntries.filter((entry) => entry.category === category),
+  }));
+
+  return (
+    <div>
+      <PageHeader
+        title="คู่มือการสอบและสื่อการเรียนรู้"
+        description="เอกสารแนะนำและคู่มือการเตรียมตัวสำหรับการสอบความรู้และทักษะวิชาชีพเภสัชกรรมทุกรูปแบบ"
+        breadcrumbs={[{ label: "คู่มือการสอบ" }]}
+        eyebrow="การสอบ"
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <span className="badge-green">คู่มือ {guideEntries.length} รายการ</span>
+            <span>ปรับปรุงล่าสุด 1 พฤศจิกายน 2569</span>
+          </div>
+        }
+        actions={
+          <Link href="/documents" className="btn-secondary">
+            <FileText className="h-4 w-4" />
+            เอกสารและแบบฟอร์ม
+          </Link>
+        }
+      />
+
+      <div className="container-page py-8 lg:py-10">
+        <div className="notice">
+          <Info className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold">การเข้าถึงคู่มือฉบับเต็ม</p>
+            <p className="mt-1 leading-6">
+              คู่มือในหน้านี้เชื่อมโยงไปยังรายละเอียดเอกสารในศูนย์เอกสาร
+              ซึ่งสามารถเปิดอ่านและพิมพ์เพื่อการศึกษาได้
+              หากต้องการไฟล์ฉบับทางการ กรุณาติดต่อศูนย์สอบฯ
+              หรือดาวน์โหลดจากประกาศที่เกี่ยวข้อง
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-6">
+          {groups.map((group) => (
+            <section key={group.category}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {group.category}
+                  </h2>
+                  <p className="mt-0.5 text-sm text-gray-600">
+                    {categoryDescriptions[group.category]}
                   </p>
                 </div>
+                <span className="badge-gray">{group.entries.length} รายการ</span>
               </div>
 
-              <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-gray-400">
-                  {item.pages} • {item.size}
-                </span>
-                <a
-                  href="#download-guide"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-emerald-700" />
-                  ดาวน์โหลดคู่มือ
-                </a>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                {group.entries.map((entry) => {
+                  const document = getDocumentById(entry.documentId);
+                  const Icon = entry.icon;
+                  if (!document) return null;
+                  return (
+                    <article
+                      key={entry.documentId}
+                      className="card flex flex-col p-5 transition-colors hover:border-emerald-400"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-emerald-700">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="badge-green font-mono text-[0.7rem]">
+                              {document.code}
+                            </span>
+                            <span className="badge-gray">
+                              {document.fileType}
+                            </span>
+                          </div>
+                          <h3 className="mt-1.5 text-base font-bold leading-snug text-gray-900">
+                            {entry.title}
+                          </h3>
+                          <p className="mt-1 line-clamp-3 text-sm leading-6 text-gray-600">
+                            {entry.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
+                        <span className="text-xs text-gray-500">
+                          {document.fileSize} · ปรับปรุง {document.updated}
+                        </span>
+                        <Link
+                          href={`/documents/${document.id}`}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-800 hover:underline"
+                        >
+                          เปิดรายละเอียดคู่มือ
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        <div className="mt-8 rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <Monitor className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+              <div>
+                <h2 className="text-sm font-bold text-emerald-950">
+                  ทดลองใช้งานระบบ E-Exam
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-emerald-900">
+                  ระบบจำลองการสอบช่วยให้ท่านคุ้นเคยกับหน้าจอและขั้นตอนการส่งคำตอบ
+                  ก่อนเข้าสอบจริง
+                </p>
               </div>
             </div>
-          );
-        })}
+            <Link href="/e-exam" className="btn-primary shrink-0 text-sm">
+              เปิดระบบทดลองสอบ
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
-import { Suspense } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import CookieConsent from "@/components/layout/CookieConsent";
+import BackToTop from "@/components/layout/BackToTop";
 
 export default function PublicLayout({
   children,
@@ -9,11 +10,13 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <Suspense fallback={<div className="h-20 bg-white border-b border-emerald-100" />}>
-        <Header />
-      </Suspense>
-      <main className="flex-1">{children}</main>
+      <Header />
+      <main id="main-content" className="flex-1">
+        {children}
+      </main>
       <Footer />
+      <CookieConsent />
+      <BackToTop />
     </>
   );
 }

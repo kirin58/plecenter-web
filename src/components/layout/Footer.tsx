@@ -1,58 +1,83 @@
 import Link from "next/link";
-import { Building2, Phone, Mail, MapPin, ExternalLink, ShieldCheck } from "lucide-react";
+import {
+  Clock,
+  ExternalLink,
+  Mail,
+  MapPin,
+  Phone,
+  Printer,
+  ShieldCheck,
+} from "lucide-react";
+import { siteInfo } from "@/data/site";
 
-const quickLinks = [
-  { href: "/", label: "หน้าแรก" },
+const serviceLinks = [
+  { href: "/apply", label: "สมัครสอบออนไลน์" },
+  { href: "/exam-registration", label: "ลงทะเบียนเข้าสอบ" },
+  { href: "/scores", label: "ตรวจสอบสถานะและผลสอบ" },
+  { href: "/calendar", label: "ปฏิทินและกำหนดการสอบ" },
+  { href: "/documents", label: "เอกสารและแบบฟอร์ม" },
+  { href: "/requests", label: "ยื่นคำร้องออนไลน์" },
+  { href: "/e-exam", label: "ระบบ E-Exam" },
+];
+
+const aboutLinks = [
+  { href: "/about", label: "เกี่ยวกับศูนย์สอบฯ" },
+  { href: "/committees", label: "คณะอนุกรรมการและคณะทำงาน" },
+  { href: "/examinees", label: "ข้อมูลสำหรับผู้เข้าสอบ" },
   { href: "/news", label: "ข่าวสารและประกาศ" },
-  { href: "/calendar", label: "ปฏิทินสอบ" },
-  { href: "/regulations", label: "ระเบียบและเกณฑ์การสอบ" },
-  { href: "/faq", label: "คำถามที่พบบ่อย (FAQ)" },
+  { href: "/faq", label: "คำถามที่พบบ่อย" },
   { href: "/contact", label: "ติดต่อศูนย์สอบฯ" },
 ];
 
 const documentLinks = [
-  { href: "/guides", label: "คู่มือการสอบและ OSPE" },
-  { href: "/documents", label: "ศูนย์เอกสารและแบบฟอร์ม" },
-  { href: "/e-exam", label: "ระบบสอบคอมพิวเตอร์ E-Exam" },
-  { href: "/requests", label: "ระบบยื่นคำร้องออนไลน์" },
+  { href: "/regulations", label: "ระเบียบและเกณฑ์การสอบ" },
+  { href: "/guides", label: "คู่มือการสอบ" },
+  { href: "/sample-exams", label: "ตัวอย่างข้อสอบ" },
+  { href: "/documents", label: "แบบฟอร์มคำขออื่น ๆ" },
+  { href: "/links", label: "หน่วยงานที่เกี่ยวข้อง" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-gray-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-700 text-white flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-emerald-100" />
+    <footer className="mt-auto bg-emerald-950 text-emerald-100">
+      <div className="container-page py-12 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr]">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-600 bg-emerald-900 text-amber-300">
+                <ShieldCheck className="h-6 w-6" strokeWidth={1.8} />
+              </span>
+              <div className="leading-tight">
+                <div className="text-base font-bold text-white">
+                  ศูนย์สอบความรู้ฯ สภาเภสัชกรรม
+                </div>
+                <div className="mt-0.5 text-[0.68rem] font-medium uppercase tracking-wide text-emerald-400">
+                  Pharmacy Licensure Examination Center
+                </div>
               </div>
-              <h3 className="text-sm font-bold text-gray-900">
-                ศูนย์สอบความรู้ฯ สภาเภสัชกรรม
-              </h3>
             </div>
-            <p className="text-xs text-gray-500 leading-relaxed font-light">
-              ศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม สภาเภสัชกรรม (Pharmacy Licensure Examination Center) 
-              ดำเนินการจัดสอบเพื่อขึ้นทะเบียนและรับใบอนุญาตเป็นผู้ประกอบวิชาชีพเภสัชกรรมตามกฎหมาย
+            <p className="mt-4 text-sm leading-7 text-emerald-200">
+              ดำเนินการจัดสอบความรู้และทักษะทางวิชาชีพเภสัชกรรม
+              เพื่อการขึ้นทะเบียนและรับใบอนุญาตเป็นผู้ประกอบวิชาชีพเภสัชกรรม
+              ภายใต้การกำกับดูแลของสภาเภสัชกรรม
             </p>
-            <div className="pt-2 text-xs text-gray-600 space-y-1">
-              <div>มาตรฐานการสอบระดับสากล</div>
-              <div className="text-emerald-800 font-medium">คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA</div>
+            <div className="mt-4 flex items-center gap-2 text-xs text-emerald-300">
+              <ShieldCheck className="h-4 w-4 text-amber-400" />
+              คุ้มครองข้อมูลส่วนบุคคลตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล
+              พ.ศ. 2562
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 border-l-2 border-emerald-600 pl-2">
+            <h2 className="border-l-2 border-amber-400 pl-2.5 text-sm font-bold text-white">
               บริการหลัก
-            </h3>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
+            </h2>
+            <ul className="mt-4 space-y-2.5">
+              {serviceLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-gray-600 hover:text-emerald-800 transition-colors"
+                    className="text-sm text-emerald-200 transition-colors hover:text-white hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -61,17 +86,28 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Documents */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 border-l-2 border-emerald-600 pl-2">
-              เอกสารและคู่มือ
-            </h3>
-            <ul className="space-y-2">
-              {documentLinks.map((link) => (
-                <li key={link.label}>
+            <h2 className="border-l-2 border-amber-400 pl-2.5 text-sm font-bold text-white">
+              ข้อมูลและประกาศ
+            </h2>
+            <ul className="mt-4 space-y-2.5">
+              {aboutLinks.map((link) => (
+                <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-gray-600 hover:text-emerald-800 transition-colors"
+                    className="text-sm text-emerald-200 transition-colors hover:text-white hover:underline"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <ul className="mt-3 space-y-2.5 border-t border-emerald-800 pt-3">
+              {documentLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-emerald-200 transition-colors hover:text-white hover:underline"
                   >
                     {link.label}
                   </Link>
@@ -80,51 +116,77 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 border-l-2 border-emerald-600 pl-2">
-              ข้อมูลติดต่อราชการ
-            </h3>
-            <ul className="space-y-3 text-xs text-gray-600">
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
-                <span>
-                  สภาเภสัชกรรม อาคาร 6 ชั้น 7 ซอยสาธารณสุข 8 กระทรวงสาธารณสุข ถนนติวานนท์ ต.ตลาดขวัญ อ.เมือง จ.นนทบุรี 11000
+            <h2 className="border-l-2 border-amber-400 pl-2.5 text-sm font-bold text-white">
+              ข้อมูลติดต่อ
+            </h2>
+            <ul className="mt-4 space-y-3.5 text-sm">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <span className="leading-6 text-emerald-200">
+                  {siteInfo.address}
                 </span>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <li className="flex items-start gap-2.5">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                 <a
-                  href="tel:025919992"
-                  className="hover:text-emerald-800 font-mono"
+                  href={`tel:${siteInfo.phoneHref}`}
+                  className="text-emerald-200 hover:text-white"
                 >
-                  0-2591-9992 ถึง 5
+                  {siteInfo.phone}
                 </a>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+              <li className="flex items-start gap-2.5">
+                <Printer className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <span className="text-emerald-200">โทรสาร {siteInfo.fax}</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                 <a
-                  href="mailto:plecenter@pharmacycouncil.org"
-                  className="hover:text-emerald-800 font-mono"
+                  href={`mailto:${siteInfo.email}`}
+                  className="break-all text-emerald-200 hover:text-white"
                 >
-                  plecenter@pharmacycouncil.org
+                  {siteInfo.email}
                 </a>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <span className="text-emerald-200">{siteInfo.hours}</span>
               </li>
             </ul>
+            <a
+              href={siteInfo.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline"
+            >
+              เปิดแผนที่สำนักงาน
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+      <div className="border-t border-emerald-800">
+        <div className="container-page flex flex-col gap-3 py-4 text-xs text-emerald-300 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © พ.ศ. 2569 ศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม สภาเภสัชกรรม — สงวนลิขสิทธิ์ตามกฎหมาย
+            © 2569 ศูนย์สอบความรู้และทักษะทางวิชาชีพเภสัชกรรม สภาเภสัชกรรม
+            สงวนลิขสิทธิ์
           </p>
-          <div className="flex items-center gap-4 text-[11px]">
-            <Link href="/regulations" className="hover:underline">นโยบายความเป็นส่วนตัว</Link>
-            <span>|</span>
-            <Link href="/regulations" className="hover:underline">ข้อกำหนดการใช้งานระบบ</Link>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <Link href="/privacy" className="hover:text-white hover:underline">
+              นโยบายความเป็นส่วนตัว
+            </Link>
+            <span className="text-emerald-700">|</span>
+            <Link href="/terms" className="hover:text-white hover:underline">
+              ข้อกำหนดการใช้งาน
+            </Link>
+            <span className="text-emerald-700">|</span>
+            <Link href="/sitemap" className="hover:text-white hover:underline">
+              แผนผังเว็บไซต์
+            </Link>
+            <span className="text-emerald-700">|</span>
+            <span>ปรับปรุงล่าสุด {siteInfo.updated}</span>
           </div>
         </div>
       </div>
